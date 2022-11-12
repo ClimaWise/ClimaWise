@@ -3,3 +3,9 @@ venv
 .history
 .streamlit
 .idea
+.env
+bin
+etc
+include
+lib
+share

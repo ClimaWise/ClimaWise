@@ -1,11 +1,5 @@
 import openai
 
-poem = """Write a poem with the following words: 
----
-{input}
----
-This is the poem: """
-
 def set_openai_key(key):
     """Sets OpenAI key."""
     openai.api_key = key
@@ -42,11 +36,11 @@ class GeneralModel:
         ].strip()
         return r
 
-    def model_prediction(self, input, api_key):
+    def model_prediction(self, task, input, api_key,temperature):
         """
         wrapper for the API to save the prompt and the result
         """
         # Setting the OpenAI API key got from the OpenAI dashboard
         set_openai_key(api_key)
-        output = self.query(poem.format(input = input))
+        output = self.query(task.format(input = input),myKwargs={"temperature":temperature})
         return output
