@@ -11,9 +11,10 @@ task_list = {
     "Keywords Extraction":"You're an expert policymaker specialized in climate change. Extract the most relevant keywords from the following text:\n\n{input}",
     "Bullet Points":"You're an expert policymaker specialized in climate change. Given the policy below, summarize its content in a bullet point list.\n\n{input}\n\n-",
     "Questions Generation":"You're an expert policymaker that specializes in climate change. Given the policy below, generate questions about it for a FAQ, but only if they're answerable based on the policy.\n\nPolicy:\n\{input}\n\nQuestions:\n\n- ",
-    "Criticize":"I am a highly intelligent bot for policy critique, specialized in climate change. Importantly, I also take into account the country that the policy is for. If you give me a country and a text that's a chunk of a policy related to climate change for that country, I'll generate critique for that text, trying to point out potential problems, risks, flaws and unintended consequences that such policy could cause. Then I'll propose changes to these issues, if I'll be sure of any. Country: Great Britain.  Text:{input} \n\n\ My critique:\n-" 
+    "Criticize":"I am a highly intelligent bot for policy critique, specialized in climate change. Importantly, I also take into account the country that the policy is for. If you give me a country and a text that's a chunk of a policy related to climate change for that country, I'll generate critique for that text, trying to point out potential problems, risks, flaws and unintended consequences that such policy could cause. Then I'll propose changes to these issues, if I'll be sure of any. Country: Great Britain.  Text:{input} \n\n\ My critique:\n-", 
+    "Question Answering": "I am a highly intelligent bot for policy critique, specialized in climate change. Based on the policy text below, answer the following question.\n\nPolicy Text:{input}\n\nQuestion:\n\n{question}Answer: "
       }
-
+# You're an expert policymaker that specializes in climate change.Given the policy below and questions about it, answer them in order.If unsure about a question, reply with \'DONT KNOW\' instead.\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nQuestion:\n{question}
 def app():
 
     # Creating an object of prediction service
@@ -21,8 +22,8 @@ def app():
 
     # Using the streamlit cache
     @st.cache
-    def process_prompt(task, input, temperature):
-        return pred.model_prediction(task = task, input=input.strip(), api_key=api_key, temperature=temperature)
+    def process_prompt(task, input, temperature, question=None):
+        return pred.model_prediction(task = task, input=input.strip(), api_key=api_key, temperature=temperature,question=question.strip())
 
     # with st.sidebar:
     #     api_key = st.sidebar.text_input("APIkey", type="password")
@@ -49,9 +50,14 @@ def app():
 
             temperature = st.slider('Temperature', 0.0, 1.0, 0.45)
 
+            print(value)
+
+            if (get_key(task_list,value)=='Question Answering'):
+                question = st.text_input('Question:')
+
             if st.button("Run"):
                 with st.spinner(text="In progress"):
-                    response_text = process_prompt(value, input,temperature)
+                    response_text = process_prompt(value, input,temperature, question)
                     st.markdown(response_text)
     else:
         st.error("🔑 Please enter API Key")
