@@ -9,3 +9,4 @@ etc
 include
 lib
 share
+.streamlit

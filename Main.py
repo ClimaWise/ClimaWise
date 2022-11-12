@@ -27,7 +27,8 @@ def app():
     # with st.sidebar:
     #     api_key = st.sidebar.text_input("APIkey", type="password")
 
-    api_key = os.environ.get("OPENAI_KEY")
+    # api_key = os.environ.get("OPENAI_KEY")
+    api_key = st.secrets["OPENAI_KEY"]
 
     if api_key:
         #MAIN
