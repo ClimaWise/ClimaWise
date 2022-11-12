@@ -1,4 +1,4 @@
-# GPT-3 Streamlit boilerplate
+# OpenAI Hackathon - GPT-3 Streamlit
 
 - create virtual environment https://docs.python.org/3/library/venv.html
 - Activate virtual environment: `./venv/Scripts/activate`
