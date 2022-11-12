@@ -23,7 +23,7 @@ def app():
     # Using the streamlit cache
     @st.cache
     def process_prompt(task, input, temperature, question=None):
-        return pred.model_prediction(task = task, input=input.strip(), api_key=api_key, temperature=temperature,question=question.strip())
+        return pred.model_prediction(task = task, input=input.strip(), api_key=api_key, temperature=temperature, question=question)
 
     # with st.sidebar:
     #     api_key = st.sidebar.text_input("APIkey", type="password")
@@ -54,6 +54,8 @@ def app():
 
             if (get_key(task_list,value)=='Question Answering'):
                 question = st.text_input('Question:')
+            else:
+                question = None
 
             if st.button("Run"):
                 with st.spinner(text="In progress"):

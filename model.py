@@ -36,10 +36,13 @@ class GeneralModel:
         ].strip()
         return r
 
-    def model_prediction(self, task, input, api_key,temperature,question):
+    def model_prediction(self, task, input, api_key, temperature, question):
         """
         wrapper for the API to save the prompt and the result
         """
+        if question:
+            question = question.strip()
+            
         # Setting the OpenAI API key got from the OpenAI dashboard
         set_openai_key(api_key)
         output = self.query(task.format(input = input, question = question),myKwargs={"temperature":temperature})
