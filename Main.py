@@ -22,7 +22,7 @@ task_list = {
     "CO2 Reduction Commitments": "You're an expert policymaker that specializes in climate change. List up to 6 actions taken to reduce CO2 emission in the policy given below.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nActions taken:\n-",
     "CO2 Reduction Commitment Ref": "You're an expert policymaker that specializes in climate change. List actions taken to reduce CO2 emission in the policy given below.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nActions taken:\n{question}\n\nFor each action taken, reference a single quote from the policy that confirms them:\n- \"",
     "Quote CO2 Reduction Commitments": "quote_co2_commitments",
-    "Sentiment Analysis": "I am a highly intelligent bot for policy critique, specialized in climate change. Importantly, I also take into account the associated tweet's sentiment.\n\nIf you give me the topic of the policy, I'll provide a sentiment analysis in the general public, deciding whether a the sentiment is positive, neutral, or negative.\n\nText:\n{input}\n\nSentiment:\n",
+    "Sentiment Analysis": "I am a highly intelligent bot for policy critique, specialized in climate change. Importantly, I also take into account the associated tweets sentiment.\nIf you give me a policy, I'll provide sentiment analysis, predicting what the sentiment of the public response to the policy will be.\n\nPolicy:\n{input}\n\nSentiment:\n",
 }
 
 country_list = [
@@ -119,7 +119,16 @@ def app():
             if get_key(task_list,value)=='Similar Policies':
                 temperature = st.slider('Number of similar policies to show', 0, 5, 3)
             else:
-                temperature = st.slider('Temperature', 0.0, 1.0, 0.45)
+                # TODO: Experiment with default temperatures more
+                temperature = 0.45
+                if get_key(task_list,value) in ["Sentiment Analysis", "FAQ Generation", "Questions Generation"]:
+                    temperature = 0.8
+                elif get_key(task_list,value) == "Criticize":
+                    temperature = 0.9
+                elif get_key(task_list,value) in ["CO2 Reduction Commitments", "CO2 Reduction Commitment Ref", "Quote CO2 Reduction Commitments"]:
+                    temperature = 0.25
+                    
+                temperature = st.slider('Temperature', 0.0, 1.0, temperature)
 
             if ((get_key(task_list,value)=='Question Answering')|(get_key(task_list,value)=='Question Answering Ref')):
                 question = st.text_input('Question:')
