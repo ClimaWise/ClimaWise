@@ -2,7 +2,11 @@ import streamlit as st
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv())
 from model import GeneralModel
-import os
+import json
+from support import get_chunks, policy_full_text
+
+# file_path = './Industrial_Decarbonisation_Strategy_10382.json'
+# chunks = get_chunks(policy_full_text(file_path))
 
 task_list = {
     "Summary":"{input}\n\nTl;dr",
@@ -12,7 +16,9 @@ task_list = {
     "Bullet Points":"You're an expert policymaker specialized in climate change. Given the policy below, summarize its content in a bullet point list.\n\n{input}\n\n-",
     "Questions Generation":"You're an expert policymaker that specializes in climate change. Given the policy below, generate questions about it for a FAQ, but only if they're answerable based on the policy.\n\nPolicy:\n\{input}\n\nQuestions:\n\n- ",
     "Criticize":"I am a highly intelligent bot for policy critique, specialized in climate change. Importantly, I also take into account the country that the policy is for. If you give me a country and a text that's a chunk of a policy related to climate change for that country, I'll generate critique for that text, trying to point out potential problems, risks, flaws and unintended consequences that such policy could cause. Then I'll propose changes to these issues, if I'll be sure of any. Country: Great Britain.  Text:{input} \n\n\ My critique:\n-", 
-    "Question Answering": "I am a highly intelligent bot for policy critique, specialized in climate change. Based on the policy text below, answer the following question.\n\nPolicy Text:{input}\n\nQuestion:\n\n{question}Answer: "
+    "Question Answering": "I am a highly intelligent bot for policy critique, specialized in climate change. Based on the policy text below, answer the following question.\n\nPolicy Text:{input}\n\nQuestion:\n\n{question}Answer: ",
+    "Question Answering Ref": "I am a highly intelligent bot for policy critique, specialized in climate change. Based on the policy text below, reference what sentence of the policy text can be used to answer the following question. \n\nPolicy Text:{input}\n\nQuestion:\n\n{question}\n\nReference text in policy to answer the question:  "
+ 
       }
 # You're an expert policymaker that specializes in climate change.Given the policy below and questions about it, answer them in order.If unsure about a question, reply with \'DONT KNOW\' instead.\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nQuestion:\n{question}
 def app():
@@ -52,7 +58,7 @@ def app():
 
             print(value)
 
-            if (get_key(task_list,value)=='Question Answering'):
+            if ((get_key(task_list,value)=='Question Answering')|(get_key(task_list,value)=='Question Answering Ref')):
                 question = st.text_input('Question:')
 
             if st.button("Run"):
