@@ -192,6 +192,17 @@ class GeneralModel:
 
         return sentiment
 
+    def summarization_finetuned(self,input,temperature):
+        prompt = f"{input}\n\n###\n\n"
+        r = openai.Completion.create(
+            model="curie:ft-oai-hackathon-2022-team-35-2022-11-13-16-05-07",
+            prompt=prompt,
+            max_tokens=400,
+            temperature=temperature,
+            stop=['\n\n-->']
+            )["choices"][0]["text"].strip()
+        return r
+
     def model_prediction(self, task, input, api_key, temperature, question):
         """
         wrapper for the API to save the prompt and the result
@@ -212,5 +223,8 @@ class GeneralModel:
             return self.quote_co2_commitments(input, temperature)
         elif task == "Sentiment Analysis":
             return self.sentiment_analysis(input, temperature)
+        elif task == "summarization_finetuned":
+            return self.summarization_finetuned(input,temperature)
         else:
             return self.completion_query(task.format(input=input, question=question), myKwargs={"temperature": temperature})
+
