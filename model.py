@@ -142,7 +142,11 @@ class GeneralModel:
         r = openai.Completion.create(prompt=prompt, **kwargs)["choices"][0][
             "text"
         ].strip()
-        return r
+        # Add the initial hyphen, if it was in the prompt
+        if prompt[-1] == '-':
+            r = '-' + r
+        print(r)
+        return r.replace('-', '- ')
 
     def embedding_query(self, input, country, n_results):
         embedding_input = get_embedding(
@@ -163,10 +167,10 @@ class GeneralModel:
 
     def faq_generation(self, input, temperature):
         prompt = f"You're an expert policymaker that specializes in climate change. Given the policy below, generate questions about it for a FAQ, but only if they're answerable based on the policy.\n\nPolicy:\n\"\"\"\"\"\"\n{input}\n\"\"\"\"\"\"\nQuestions:\n-"
-        questions = '- ' + self.completion_query(prompt, myKwargs={"temperature": temperature}).replace('-', '- ')
+        questions = self.completion_query(prompt, myKwargs={"temperature": temperature}).replace('-', '- ')
 
         prompt = f"You're an expert policymaker that specializes in climate change. Given the policy below and questions about it, answer them in order. If unsure about a question, reply with \"DON'T KNOW\" instead.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nQuestions:\n{questions}\nAnswers:\n-"
-        answers = '- ' + self.completion_query(prompt, myKwargs={"temperature": temperature})
+        answers = self.completion_query(prompt, myKwargs={"temperature": temperature})
 
         ordered_faq = ''
         for question, answer in zip(questions.split('\n'), answers.split('\n')):
