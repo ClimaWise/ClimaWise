@@ -10,3 +10,7 @@ include
 lib
 share
 .streamlit
+.vscode
+data
+Pipfile
+Pipfile.lock

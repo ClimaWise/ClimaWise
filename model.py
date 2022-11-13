@@ -1,15 +1,125 @@
+import nltk
+import numpy as np
+import pandas as pd
 import openai
+import streamlit as st
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_random_exponential,
+)
+from transformers import GPT2Tokenizer
+
 
 def set_openai_key(key):
     """Sets OpenAI key."""
     openai.api_key = key
+
+
+def get_embedding(text: str, engine="text-similarity-ada-001"):
+    """
+    It takes a string of text and returns embeddings for the text
+
+    :param text: The text to embed
+    :type text: str
+    :param engine: The name of the engine to use, defaults to text-similarity-ada-001 (optional)
+    :return: A list of floats.
+    """
+    # replace newlines, which can negatively affect performance.
+    text = text.replace("\n", " ")
+
+    return openai.Embedding.create(input=[text], engine=engine)["data"][0]["embedding"]
+
+
+def cosine_similarity(a, b):
+    """
+    It takes two vectors, a and b, and returns the cosine of the angle between them
+
+    :param a: the first vector
+    :param b: the number of bits to use for the hash
+    :return: The cosine similarity between two vectors.
+    """
+    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+
+def get_chunks(str, max_chunk_length: int = 2000):
+    nltk.download("punkt")
+    sentences = nltk.sent_tokenize(str)
+    sentence_lengths = list(map(count_tokens, sentences))
+    chunks = []
+    chunk = []
+    chunk_len = 0
+    for i in range(len(sentences)):
+        if chunk_len + sentence_lengths[i] > max_chunk_length or i == len(sentences) - 1:
+            chunks.append(' '.join(chunk))
+            chunk = []
+            chunk_len = 0
+        else:
+            chunk.append(sentences[i])
+            chunk_len += sentence_lengths[i]
+    print(
+        f"Split {len(sentences)} sentences into {len(chunks)} chunks")
+    return chunks
+
+
+tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+
+
+def count_tokens(text: str) -> int:
+    return len(tokenizer.encode(text))
+
+
+@retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(5))
+@st.cache(suppress_st_warning=True, persist=True)
+def completion_with_backoff(**kwargs):
+    return openai.Completion.create(**kwargs)
+
+
+def gen_keywords_for_chunks(chunks: list, temperature):
+    keywords = set()
+    for chunk in chunks:
+        print('chunk ', type(chunk), temperature)
+        keyword = gen_keywords(chunk, temperature)
+        if keyword in keywords:
+            continue
+        keywords.add(keyword)
+    return keywords
+
+
+def keyword_chunking_query(input, temperature=0.85):
+    text = open('assets/example_policy.txt', 'r').read()
+    chunks = get_chunks(text)
+    keywords = gen_keywords_for_chunks(chunks, temperature)
+    return keywords
+
+
+@st.cache(suppress_st_warning=True, persist=True)
+def gen_keywords(
+    chunk: str, temperature: int
+) -> list:
+
+    response = completion_with_backoff(
+        model="text-davinci-002",
+        prompt=f'I am a highly intelligent bot for policy analysis, specialized in climate change. If given an excerpt, I will extract a single key word from the excerpt. The key word must be relevant to the excerpt and/or common in the excerpt. If I cannot exctract a single key word from the excerpt, I will return "No keywords found"' f"\n###\nExcerpt:{chunk}\n###\n-",
+        temperature=temperature,
+        max_tokens=200,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0,
+    )
+    keyword = response["choices"][0]["text"].strip().split("\n")[0]
+
+    return keyword
+
 
 class GeneralModel:
     def __init__(self):
         print("Model Intilization--->")
         # set_openai_key(API_KEY)
 
-    def query(self, prompt, myKwargs={}):
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(5))
+    @st.cache(suppress_st_warning=True, persist=True)
+    def completion_query(self, prompt, myKwargs={}):
         """
         wrapper for the API to save the prompt and the result
         """
@@ -26,21 +136,42 @@ class GeneralModel:
             "stop": ["###"],
         }
 
-
         for kwarg in myKwargs:
             kwargs[kwarg] = myKwargs[kwarg]
-
 
         r = openai.Completion.create(prompt=prompt, **kwargs)["choices"][0][
             "text"
         ].strip()
         return r
 
-    def model_prediction(self, task, input, api_key,temperature,question):
+    def embedding_query(self, input):
+        embedding_input = get_embedding(
+            input, engine="text-similarity-babbage-001")
+
+        df = pd.read_pickle("data/policies_embeddings.p")
+        df["similarity"] = df["embedding"].apply(
+            lambda x: cosine_similarity(x, embedding_input)
+        )
+
+        res = df.sort_values("similarity", ascending=False).head(
+            5)  # TODO: make this 5 variable?
+        # df[df.country != country].sort_values("similarities", ascending=False) # TODO: display similar policies of different countries?
+
+        return res.drop(columns=["embedding", "similarity"]).reset_index(drop=True)
+
+    def model_prediction(self, task, input, api_key, temperature, question):
         """
         wrapper for the API to save the prompt and the result
         """
+        if question:
+            question = question.strip()
+
         # Setting the OpenAI API key got from the OpenAI dashboard
         set_openai_key(api_key)
-        output = self.query(task.format(input = input, question = question),myKwargs={"temperature":temperature})
-        return output
+
+        if task == "Embedding task":
+            return self.embedding_query(input)
+        elif task == "keyword_chunking_task":
+            return keyword_chunking_query(input, temperature)
+        else:
+            return self.completion_query(task.format(input=input, question=question), myKwargs={"temperature": temperature})
