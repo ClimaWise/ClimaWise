@@ -1,5 +1,5 @@
 openai==0.25.0
 streamlit==1.14.0
-tenacity
-nltk
-transformers
+tenacity==8.1.0
+nltk==3.7
+transformers==4.24.0

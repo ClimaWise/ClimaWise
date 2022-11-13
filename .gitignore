@@ -4,13 +4,8 @@ venv
 .streamlit
 .idea
 .env
-bin
-etc
-include
-lib
 share
 .streamlit
 .vscode
-data
 Pipfile
 Pipfile.lock

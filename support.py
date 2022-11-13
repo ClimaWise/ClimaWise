@@ -3,7 +3,6 @@ import nltk
 from transformers import GPT2Tokenizer
 
 tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
-file_path = './Industrial_Decarbonisation_Strategy_10382.json'
 
 # function to return key for any value
 def get_key(my_dict, val):
@@ -11,8 +10,7 @@ def get_key(my_dict, val):
         if val == value:
             return key
     return "key doesn't exist"
-
-    
+ 
 def policy_full_text(file_path:str):
 
     with open(file_path, encoding='utf-8') as f:
@@ -27,10 +25,6 @@ def policy_full_text(file_path:str):
 
         policy_text += text
     return policy_text
-
-
-# fulltext = policy_full_text(file_path)
-# print(fulltext)
 
 def count_tokens(text: str) -> int:
     return len(tokenizer.encode(text))
@@ -51,6 +45,3 @@ def get_chunks(text: str, max_chunk_length: int = 3500):
             chunk.append(sentences[i])
             chunk_len += sentence_lengths[i]
     return chunks
-
-# chunks = get_chunks(policy_full_text(file_path))
-# print(chunks[0])

@@ -1,10 +1,6 @@
-import os
 from model import GeneralModel
 import streamlit as st
-from dotenv import load_dotenv, find_dotenv
-load_dotenv(find_dotenv())
 from model import GeneralModel
-import json
 from support import get_chunks, policy_full_text, get_key
 
 # file_path = './data/Industrial_Decarbonisation_Strategy_10382.json'
@@ -80,6 +76,3 @@ def app():
 
     else:
         st.error("🔑 Please enter API Key")
-
-
-
