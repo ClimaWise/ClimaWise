@@ -17,6 +17,7 @@ task_list = {
     "Criticize": "I am a highly intelligent bot for policy critique, specialized in climate change. Importantly, I also take into account the country that the policy is for. If you give me a country and a text that's a chunk of a policy related to climate change for that country, I'll generate critique for that text, trying to point out potential problems, risks, flaws and unintended consequences that such policy could cause. Then I'll propose changes to these issues, if I'll be sure of any.\nCountry: Great Britain.\nText:\n{input}\n\nMy critique:\n",
     "Question Answering": "I am a highly intelligent bot for policy critique, specialized in climate change. Based on the policy text below, answer the following question.\n\nPolicy Text:{input}\n\nQuestion:\n\n{question}Answer:",
     "Question Answering Ref": "I am a highly intelligent bot for policy critique, specialized in climate change. Based on the policy text below, reference what sentence of the policy text can be used to answer the following question.\n\nPolicy text:{input}\n\nQuestion:\n{question}\n\nReference text in policy to answer the question:",
+    "Policy Section Draft from Outline": "I am a highly intelligent bot for policy generation, specialized in climate change. If given a few outline points, I will use my own knowledge of existing climate policy and the provided outline points to generate a full draft of a climate policy section. The generated section will be at least 5 sentences long and in paragraph form. The section I generate will be more comprehensive and prescriptive than the points.\n\Outline points:{input}\n\nPolicy section:",
     "FAQ Generation": "faq_generation",
     "Similar Policies": "embedding_task",
     "Success prediction based on similar policies": "success_based_on_similar",
@@ -120,10 +121,12 @@ def app():
             value = st.selectbox(
                 "Task", options, format_func=lambda x: get_key(task_list, x))
 
-            if get_key(task_list,value) == 'Similar Policies':
-                temperature = st.slider('Number of similar policies to show', 0, 5, 3)
-            elif get_key(task_list,value) == 'Success prediction based on similar policies':
-                temperature = st.slider('Number of similar policies to base on', 0, 5, 3)
+            if get_key(task_list, value) == 'Similar Policies':
+                temperature = st.slider(
+                    'Number of similar policies to show', 0, 5, 3)
+            elif get_key(task_list, value) == 'Success prediction based on similar policies':
+                temperature = st.slider(
+                    'Number of similar policies to base on', 0, 5, 3)
             else:
                 # TODO: Experiment with default temperatures more
                 temperature = 0.45
@@ -140,8 +143,9 @@ def app():
                 question = st.text_input('Question:')
             elif get_key(task_list, value) == 'CO2 Reduction Commitment Ref':
                 question = st.text_input('Commitment:')
-            elif get_key(task_list,value) in ['Similar Policies', 'Success prediction based on similar policies']:
-                question = st.selectbox("Country of policy being written", country_list)
+            elif get_key(task_list, value) in ['Similar Policies', 'Success prediction based on similar policies']:
+                question = st.selectbox(
+                    "Country of policy being written", country_list)
             else:
                 question = None
 
@@ -153,7 +157,6 @@ def app():
                 output.clear_responses()
 
             output.stream_responses()
-
 
     else:
         st.error("🔑 Please enter API Key")
