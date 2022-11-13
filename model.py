@@ -171,7 +171,9 @@ class GeneralModel:
 
         if task == "Embedding task":
             return self.embedding_query(input)
-        elif task == "keyword_chunking_task":
-            return keyword_chunking_query(input, temperature)
         else:
-            return self.completion_query(task.format(input=input, question=question), myKwargs={"temperature": temperature})
+            chunks = get_chunks(input)
+            result = ''
+            for chunk in chunks:
+                result += self.completion_query(task.format(input=chunk, question=question), myKwargs={"temperature": temperature})
+            return result
