@@ -16,10 +16,24 @@ task_list = {
     "Criticize":"I am a highly intelligent bot for policy critique, specialized in climate change. Importantly, I also take into account the country that the policy is for. If you give me a country and a text that's a chunk of a policy related to climate change for that country, I'll generate critique for that text, trying to point out potential problems, risks, flaws and unintended consequences that such policy could cause. Then I'll propose changes to these issues, if I'll be sure of any. Country: Great Britain.  Text:{input} \n\n\ My critique:\n-", 
     "Question Answering": "I am a highly intelligent bot for policy critique, specialized in climate change. Based on the policy text below, answer the following question.\n\nPolicy Text:{input}\n\nQuestion:\n\n{question}Answer: ",
     "Question Answering Ref": "I am a highly intelligent bot for policy critique, specialized in climate change. Based on the policy text below, reference what sentence of the policy text can be used to answer the following question. \n\nPolicy Text:{input}\n\nQuestion:\n\n{question}\n\nReference text in policy to answer the question:  ",
-    "Similar Policies": "Embedding task",
+    "Similar Policies": "embedding_task",
     "CO2 Reduction Commitments": "You're an expert policymaker that specializes in climate change. List up to 6 actions taken to reduce CO2 emission in the policy given below.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nActions taken:\n-",
     "CO2 Reduction Commitment Ref": "You're an expert policymaker that specializes in climate change. List actions taken to reduce CO2 emission in the policy given below.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nActions taken:\n{question}\n\nFor each action taken, reference a single quote from the policy that confirms them:\n- \"",
 }
+
+country_list = [
+    'AFG', 'AGO', 'ALB', 'AND', 'ARE', 'ARG', 'ARM', 'ATG', 'AUS', 'AUT', 'AZE', 'BDI', 'BEL', 'BEN', 'BFA', 'BGD', 'BGR', 'BHR',
+    'BHS', 'BIH', 'BLR', 'BLZ', 'BOL', 'BRA', 'BRB', 'BRN', 'BTN', 'BWA', 'CAF', 'CAN', 'CHE', 'CHL', 'CHN', 'CIV', 'CMR', 'COD',
+    'COG', 'COK', 'COL', 'COM', 'CPV', 'CRI', 'CUB', 'CYP', 'CZE', 'DEU', 'DJI', 'DMA', 'DNK', 'DOM', 'DZA', 'ECU', 'EGY', 'ERI',
+    'ESP', 'EST', 'ETH', 'EUR', 'FIN', 'FJI', 'FRA', 'FSM', 'GAB', 'GBR', 'GEO', 'GHA', 'GIN', 'GMB', 'GNB', 'GNQ', 'GRC', 'GRD',
+    'GTM', 'GUY', 'HND', 'HRV', 'HTI', 'HUN', 'IDN', 'IND', 'IRL', 'IRN', 'ISL', 'ISR', 'ITA', 'JAM', 'JOR', 'JPN', 'KAZ', 'KEN',
+    'KGZ', 'KHM', 'KIR', 'KNA', 'KOR', 'KWT', 'LAO', 'LBN', 'LBR', 'LBY', 'LCA', 'LIE', 'LKA', 'LSO', 'LTU', 'LUX', 'LVA', 'MAR',
+    'MCO', 'MDA', 'MDG', 'MDV', 'MEX', 'MHL', 'MKD', 'MLI', 'MLT', 'MMR', 'MNE', 'MNG', 'MOZ', 'MRT', 'MUS', 'MWI', 'MYS', 'NAM',
+    'NER', 'NGA', 'NIC', 'NIU', 'NLD', 'NOR', 'NPL', 'NRU', 'NZL', 'OMN', 'PAK', 'PAN', 'PER', 'PHL', 'PLW', 'PNG', 'POL', 'PRK',
+    'PRT', 'PRY', 'PSE', 'QAT', 'ROU', 'RUS', 'RWA', 'SAU', 'SDN', 'SEN', 'SGP', 'SLB', 'SLE', 'SLV', 'SMR', 'SOM', 'SRB', 'SSD',
+    'SUR', 'SVK', 'SVN', 'SWE', 'SWZ', 'SYC', 'SYR', 'TCD', 'TGO', 'THA', 'TJK', 'TKM', 'TLS', 'TON', 'TTO', 'TUN', 'TUR', 'TUV',
+    'TWN', 'TZA', 'UGA', 'UKR', 'URY', 'USA', 'UZB', 'VCT', 'VEN', 'VNM', 'VUT', 'WSM', 'XKX', 'YEM', 'ZAF', 'ZMB', 'ZWE',
+]
 
 def app():
 
@@ -54,12 +68,17 @@ def app():
             value = st.selectbox(
                 "Task", options, format_func=lambda x: get_key(task_list, x))
 
-            temperature = st.slider('Temperature', 0.0, 1.0, 0.45)
+            if get_key(task_list,value)=='Similar Policies':
+                temperature = st.slider('Number of similar policies to show', 0, 5, 3)
+            else:
+                temperature = st.slider('Temperature', 0.0, 1.0, 0.45)
 
             if ((get_key(task_list,value)=='Question Answering')|(get_key(task_list,value)=='Question Answering Ref')):
                 question = st.text_input('Question:')
             elif get_key(task_list,value)=='CO2 Reduction Commitment Ref':
                 question = st.text_input('Commitment:')
+            elif get_key(task_list,value)=='Similar Policies':
+                question = st.selectbox("Country of policy being written", country_list)
             else:
                 question = None
 
@@ -67,8 +86,11 @@ def app():
                 with st.spinner(text="In progress"):
                     response = process_prompt(
                         value, input, temperature, question)
-                    if value == "Embedding task":
-                        st.dataframe(response)
+                    if value == "embedding_task":
+                        st.markdown("Similar policies - Same country")
+                        st.dataframe(response[0])
+                        st.markdown("Similar policies - Other countries")
+                        st.dataframe(response[1])
                     elif value == "keyword_chunking_task":
                         for keyword in response:
                             st.markdown("- " + keyword)

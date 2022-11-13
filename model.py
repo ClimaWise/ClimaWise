@@ -144,7 +144,7 @@ class GeneralModel:
         ].strip()
         return r
 
-    def embedding_query(self, input):
+    def embedding_query(self, input, country, n_results):
         embedding_input = get_embedding(
             input, engine="text-similarity-babbage-001")
 
@@ -153,11 +153,13 @@ class GeneralModel:
             lambda x: cosine_similarity(x, embedding_input)
         )
 
-        res = df.sort_values("similarity", ascending=False).head(
-            5)  # TODO: make this 5 variable?
-        # df[df.country != country].sort_values("similarities", ascending=False) # TODO: display similar policies of different countries?
+        res = df.sort_values("similarity", ascending=False).drop(
+            columns=["embedding", "similarity"])
 
-        return res.drop(columns=["embedding", "similarity"]).reset_index(drop=True)
+        res_1 = res[res.country == country].head(n_results).reset_index(drop=True)
+        res_2 = res[res.country != country].head(n_results).reset_index(drop=True)
+
+        return [res_1, res_2]
 
     def model_prediction(self, task, input, api_key, temperature, question):
         """
@@ -169,8 +171,8 @@ class GeneralModel:
         # Setting the OpenAI API key got from the OpenAI dashboard
         set_openai_key(api_key)
 
-        if task == "Embedding task":
-            return self.embedding_query(input)
+        if task == "embedding_task":
+            return self.embedding_query(input, question, temperature)
         elif task == "keyword_chunking_task":
             return keyword_chunking_query(input, temperature)
         else:
