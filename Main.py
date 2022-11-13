@@ -7,10 +7,10 @@ from support import get_chunks, policy_full_text, get_key
 # chunks = get_chunks(policy_full_text(file_path))
 
 task_list = {
-    "Summarization - Finetuned":"summarization_finetuned",
+    "Summary - Finetuned":"summarization_finetuned",
     "Summary":"{input}\n\nTl;dr",
-    "Summary - Knowledgeable Audience":"You're an expert policymaker specialized in climate change. Summarize the following policy text for a knowledgeable audience: {input}\n\nThe policy discusses",
     "Summary - 2nd Grade":"Summarize the following text for a second-grade student:\n\n{input}.\n",
+    "The policy discusses...":"You're an expert policymaker specialized in climate change. Summarize the following policy text for a knowledgeable audience: {input}\n\nThe policy discusses",
     "Keywords Extraction":"You're an expert policymaker specialized in climate change. Extract the most relevant keywords from the following text:\n\n{input}\n-",
     "Bullet Points":"You're an expert policymaker specialized in climate change. Given the policy below, summarize its content in a bullet point list.\n\n{input}\n\n-",
     "Questions Generation":"You're an expert policymaker that specializes in climate change. Given the policy below, generate questions about it for a FAQ, but only if they're answerable based on the policy.\n\nPolicy:\n\{input}\n\nQuestions:\n-",
