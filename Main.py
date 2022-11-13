@@ -148,10 +148,10 @@ def app():
                 with st.spinner(text="In progress"):
                     output.get_response(input, value, temperature, question)
 
-            if st.button("Clear"):
+            if st.button("Clear ✂️"):
                 output.clear_responses()
                 st.experimental_rerun()
-                st.empty()
+
             output.stream_responses()
 
 
