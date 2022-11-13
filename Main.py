@@ -19,6 +19,7 @@ task_list = {
     "Question Answering Ref": "I am a highly intelligent bot for policy critique, specialized in climate change. Based on the policy text below, reference what sentence of the policy text can be used to answer the following question.\n\nPolicy text:{input}\n\nQuestion:\n{question}\n\nReference text in policy to answer the question:",
     "FAQ Generation": "faq_generation",
     "Similar Policies": "embedding_task",
+    "Success prediction based on similar policies": "success_based_on_similar",
     "CO2 Reduction Commitments": "You're an expert policymaker that specializes in climate change. List up to 6 actions taken to reduce CO2 emission in the policy given below.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nActions taken:\n-",
     "CO2 Reduction Commitment Ref": "You're an expert policymaker that specializes in climate change. List actions taken to reduce CO2 emission in the policy given below.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nActions taken:\n{question}\n\nFor each action taken, reference a single quote from the policy that confirms them:\n- \"",
     "Quote CO2 Reduction Commitments": "quote_co2_commitments",
@@ -119,9 +120,10 @@ def app():
             value = st.selectbox(
                 "Task", options, format_func=lambda x: get_key(task_list, x))
 
-            if get_key(task_list, value) == 'Similar Policies':
-                temperature = st.slider(
-                    'Number of similar policies to show', 0, 5, 3)
+            if get_key(task_list,value) == 'Similar Policies':
+                temperature = st.slider('Number of similar policies to show', 0, 5, 3)
+            elif get_key(task_list,value) == 'Success prediction based on similar policies':
+                temperature = st.slider('Number of similar policies to base on', 0, 5, 3)
             else:
                 # TODO: Experiment with default temperatures more
                 temperature = 0.45
@@ -138,9 +140,8 @@ def app():
                 question = st.text_input('Question:')
             elif get_key(task_list, value) == 'CO2 Reduction Commitment Ref':
                 question = st.text_input('Commitment:')
-            elif get_key(task_list, value) == 'Similar Policies':
-                question = st.selectbox(
-                    "Country of policy being written", country_list)
+            elif get_key(task_list,value) in ['Similar Policies', 'Success prediction based on similar policies']:
+                question = st.selectbox("Country of policy being written", country_list)
             else:
                 question = None
 

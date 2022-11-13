@@ -161,8 +161,36 @@ class GeneralModel:
 
         res_1 = res[res.country == country].head(n_results).reset_index(drop=True)
         res_2 = res[res.country != country].head(n_results).reset_index(drop=True)
-
         return [res_1, res_2]
+    
+    def success_based_on_similar(self, input, country, n_results=9):
+        similar_policies = self.embedding_query(input, country, n_results)
+
+        policy_names = []
+        countries = []
+        for df in similar_policies:
+            policy_names.extend(df['name'].tolist())
+            countries.extend(df['country'].tolist())
+
+        verified_policy_names = []
+        verified_countries = []
+        for name, temp_country in zip(policy_names, countries):
+            prompt = f"You're an climate change policy expert. Given a policy name and 3 letter code of country of it's origin, answer what you know about that policy. If nothing, instead of guessing, write \"NOTHING\".\nWhat do you know about {name} by {temp_country}?\n"
+            result = self.completion_query(prompt, myKwargs={"temperature": 0.25})
+            print('Prompt:\n', prompt)
+            print('\n\nResult:\n', result)
+            if 'NOTHING' not in result:
+                verified_policy_names.append(name)
+                verified_countries.append(country)
+        if len(verified_countries) == 0:
+            return "Can't make a certain prediction, sorry!"
+        
+        prompt = "You're an climate change policy expert. Your task is to predict whether a new policy will be successful, based on a list of policies (with their 3 letter code of country of origin), that the new policy is similar to. If you're unsure of the prediction, write \"DON'T KNOW\", otherwise predict whether it will be successful or not with a lengthy explanation to your answer, mention similar policies.\n\nThe new policy is most similar to:"
+        for name, temp_country in zip(verified_policy_names, verified_countries):
+            # TODO: Swap country code to normal country name - don't forget to change that in the prompt !!!
+            prompt += f'\n- {name} - {temp_country}'
+        prompt += '\n\nPredictions:'
+        return self.completion_query(prompt, myKwargs={"temperature": 0.9})
 
     def faq_generation(self, input, temperature):
         prompt = f"You're an expert policymaker that specializes in climate change. Given the policy below, generate questions about it for a FAQ, but only if they're answerable based on the policy.\n\nPolicy:\n\"\"\"\"\"\"\n{input}\n\"\"\"\"\"\"\nQuestions:\n-"
@@ -215,6 +243,8 @@ class GeneralModel:
 
         if task == "embedding_task":
             return self.embedding_query(input, question, temperature)
+        elif task == "success_based_on_similar":
+            return self.success_based_on_similar(input, question, temperature)
         elif task == "keyword_chunking_task":
             return keyword_chunking_query(input, temperature)
         elif task == "faq_generation":
