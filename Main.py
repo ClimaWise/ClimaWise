@@ -150,7 +150,6 @@ def app():
 
             if st.button("Clear ✂️"):
                 output.clear_responses()
-                st.experimental_rerun()
 
             output.stream_responses()
 
