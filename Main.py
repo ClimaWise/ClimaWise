@@ -18,7 +18,7 @@ task_list = {
     "Question Answering Ref": "I am a highly intelligent bot for policy critique, specialized in climate change. Based on the policy text below, reference what sentence of the policy text can be used to answer the following question.\n\nPolicy text:{input}\n\nQuestion:\n{question}\n\nReference text in policy to answer the question:",
     "FAQ Generation": "faq_generation",
     "Similar Policies": "embedding_task",
-    "CO2 Reduction Commitments": "You're an expert policymaker that specializes in climate change. List up to 6 actions taken to reduce CO2 emission in the policy given below.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nActions taken:\n-",
+    "CO2 Reduction Commitments": "You're an expert policymaker that specializes in climate change. List actions taken to reduce CO2 emission in the policy given below.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nActions taken:\n-",
     "CO2 Reduction Commitment Ref": "You're an expert policymaker that specializes in climate change. List actions taken to reduce CO2 emission in the policy given below.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nActions taken:\n{question}\n\nFor each action taken, reference a single quote from the policy that confirms them:\n- \"",
     "Quote CO2 Reduction Commitments": "quote_co2_commitments",
 }
@@ -44,8 +44,8 @@ def app():
 
     # Using the streamlit cache
     @st.cache
-    def process_prompt(task, input, temperature, question=None):
-        return pred.model_prediction(task=task, input=input.strip(), api_key=api_key, temperature=temperature, question=question)
+    def process_prompt(task, input, temperature, question=None, max_items=None, min_items=None, eq_items=None):
+        return pred.model_prediction(task=task, input=input.strip(), api_key=api_key, temperature=temperature, question=question, max_items=max_items, min_items=min_items, eq_items=eq_items)
 
     # with st.sidebar:
     #     api_key = st.sidebar.text_input("APIkey", type="password")
@@ -84,10 +84,20 @@ def app():
             else:
                 question = None
 
+            if get_key(task_list,value) in ['Bullet Points', 'Questions Generation', 'CO2 Reduction Commitments',
+                                            'FAQ Generation', 'Quote CO2 Reduction Commitments']:
+                max_items = st.number_input('Maximum # of items generated.', format='%d', step=1)
+                min_items = st.number_input('Minimum # of items generated.', format='%d', step=1)
+                eq_items =  st.number_input('Max # of items generated.', format='%d', step=1)
+            else:
+                max_items = None
+                min_items = None
+                eq_items = None
+
             if st.button("Run"):
                 with st.spinner(text="In progress"):
                     response = process_prompt(
-                        value, input, temperature, question)
+                        value, input, temperature, question, max_items, min_items, eq_items)
                     if value == "embedding_task":
                         st.markdown("Similar policies - Same country")
                         st.dataframe(response[0])

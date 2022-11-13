@@ -178,7 +178,7 @@ class GeneralModel:
         return ordered_faq
 
     def quote_co2_commitments(self, input, temperature):
-        prompt = f"You're an expert policymaker that specializes in climate change. List up to 6 actions taken to reduce CO2 emission in the policy given below.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nActions taken:\n-"
+        prompt = f"You're an expert policymaker that specializes in climate change. List actions taken to reduce CO2 emission in the policy given below.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nActions taken:\n-"
         commitments = '- ' + self.completion_query(prompt, myKwargs={"temperature": temperature}).replace('-', '- ')
 
         prompt = f"You're an expert policymaker that specializes in climate change. List actions taken to reduce CO2 emission in the policy given below.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nActions taken:\n{commitments}\n\nFor each action taken, reference a single quote from the policy that confirms them:\n- \""
@@ -186,12 +186,26 @@ class GeneralModel:
 
         return quotes
 
-    def model_prediction(self, task, input, api_key, temperature, question):
+    def model_prediction(self, task, input, api_key, temperature, question, max_items, min_items, eq_items):
         """
         wrapper for the API to save the prompt and the result
         """
         if question:
             question = question.strip()
+
+        add = ''
+        if max_items not in [None, 0]:
+            add += f"List up to {max_items} items. "
+        if min_items not in [None, 0]:
+            add += f"List at least {min_items} items. "
+        if eq_items not in [None, 0]:
+            add += f"List {eq_items} items. "
+        add = add.strip()
+        if add != '':
+            task_splits = task.split('\n\n')
+            task_splits[0] += ' ' + add
+            task = '\n\n'.join(task_splits)
+        print(task)
 
         # Setting the OpenAI API key got from the OpenAI dashboard
         set_openai_key(api_key)
