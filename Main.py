@@ -16,7 +16,9 @@ task_list = {
     "Criticize":"I am a highly intelligent bot for policy critique, specialized in climate change. Importantly, I also take into account the country that the policy is for. If you give me a country and a text that's a chunk of a policy related to climate change for that country, I'll generate critique for that text, trying to point out potential problems, risks, flaws and unintended consequences that such policy could cause. Then I'll propose changes to these issues, if I'll be sure of any. Country: Great Britain.  Text:{input} \n\n\ My critique:\n-", 
     "Question Answering": "I am a highly intelligent bot for policy critique, specialized in climate change. Based on the policy text below, answer the following question.\n\nPolicy Text:{input}\n\nQuestion:\n\n{question}Answer: ",
     "Question Answering Ref": "I am a highly intelligent bot for policy critique, specialized in climate change. Based on the policy text below, reference what sentence of the policy text can be used to answer the following question. \n\nPolicy Text:{input}\n\nQuestion:\n\n{question}\n\nReference text in policy to answer the question:  ",
-    "Similar Policies": "Embedding task"
+    "Similar Policies": "Embedding task",
+    "CO2 Reduction Commitments": "You're an expert policymaker that specializes in climate change. List up to 6 actions taken to reduce CO2 emission in the policy given below.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nActions taken:\n-",
+    "CO2 Reduction Commitment Ref": "You're an expert policymaker that specializes in climate change. List actions taken to reduce CO2 emission in the policy given below.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nActions taken:\n{question}\n\nFor each action taken, reference a single quote from the policy that confirms them:\n- \"",
 }
 
 def app():
@@ -56,6 +58,8 @@ def app():
 
             if ((get_key(task_list,value)=='Question Answering')|(get_key(task_list,value)=='Question Answering Ref')):
                 question = st.text_input('Question:')
+            elif get_key(task_list,value)=='CO2 Reduction Commitment Ref':
+                question = st.text_input('Commitment:')
             else:
                 question = None
 
