@@ -161,6 +161,19 @@ class GeneralModel:
 
         return [res_1, res_2]
 
+    def faq_generation(self, input, temperature):
+        prompt = f"You're an expert policymaker that specializes in climate change. Given the policy below, generate questions about it for a FAQ, but only if they're answerable based on the policy.\n\nPolicy:\n\"\"\"\"\"\"\n{input}\n\"\"\"\"\"\"\nQuestions:\n-"
+        questions = '- ' + self.completion_query(prompt, myKwargs={"temperature": temperature}).replace('-', '- ')
+
+        prompt = f"You're an expert policymaker that specializes in climate change. Given the policy below and questions about it, answer them in order. If unsure about a question, reply with \"DON'T KNOW\" instead.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nQuestions:\n{questions}\nAnswers:\n-"
+        answers = '- ' + self.completion_query(prompt, myKwargs={"temperature": temperature})
+
+        ordered_faq = ''
+        for question, answer in zip(questions.split('\n'), answers.split('\n')):
+            if answer != "DON'T KNOW":
+                ordered_faq += question + '\n' + answer + '\n\n---\n'
+        return ordered_faq
+
     def model_prediction(self, task, input, api_key, temperature, question):
         """
         wrapper for the API to save the prompt and the result
@@ -175,5 +188,7 @@ class GeneralModel:
             return self.embedding_query(input, question, temperature)
         elif task == "keyword_chunking_task":
             return keyword_chunking_query(input, temperature)
+        elif task == "faq_generation":
+            return self.faq_generation(input, temperature)
         else:
             return self.completion_query(task.format(input=input, question=question), myKwargs={"temperature": temperature})
