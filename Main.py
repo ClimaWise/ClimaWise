@@ -7,14 +7,14 @@ from support import get_chunks, policy_full_text, get_key
 # chunks = get_chunks(policy_full_text(file_path))
 
 task_list = {
-    "Summary - Finetuned":"summarization_finetuned",
-    "Summary":"{input}\n\nTl;dr",
-    "Summary - 2nd Grade":"Summarize the following text for a second-grade student:\n\n{input}.\n",
-    "The policy discusses...":"You're an expert policymaker specialized in climate change. Summarize the following policy text for a knowledgeable audience: {input}\n\nThe policy discusses",
-    "Keywords Extraction":"You're an expert policymaker specialized in climate change. Extract the most relevant keywords from the following text:\n\n{input}\n-",
-    "Bullet Points":"You're an expert policymaker specialized in climate change. Given the policy below, summarize its content in a bullet point list.\n\n{input}\n\n-",
-    "Questions Generation":"You're an expert policymaker that specializes in climate change. Given the policy below, generate questions about it for a FAQ, but only if they're answerable based on the policy.\n\nPolicy:\n\{input}\n\nQuestions:\n-",
-    "Criticize":"I am a highly intelligent bot for policy critique, specialized in climate change. Importantly, I also take into account the country that the policy is for. If you give me a country and a text that's a chunk of a policy related to climate change for that country, I'll generate critique for that text, trying to point out potential problems, risks, flaws and unintended consequences that such policy could cause. Then I'll propose changes to these issues, if I'll be sure of any.\nCountry: Great Britain.\nText:\n{input}\n\nMy critique:\n", 
+    "Summary - Finetuned": "summarization_finetuned",
+    "Summary": "{input}\n\nTl;dr",
+    "Summary - 2nd Grade": "Summarize the following text for a second-grade student:\n\n{input}.\n",
+    "The policy discusses...": "You're an expert policymaker specialized in climate change. Summarize the following policy text for a knowledgeable audience: {input}\n\nThe policy discusses",
+    "Keywords Extraction": "You're an expert policymaker specialized in climate change. Extract the most relevant keywords from the following text:\n\n{input}\n-",
+    "Bullet Points": "You're an expert policymaker specialized in climate change. Given the policy below, summarize its content in a bullet point list.\n\n{input}\n\n-",
+    "Questions Generation": "You're an expert policymaker that specializes in climate change. Given the policy below, generate questions about it for a FAQ, but only if they're answerable based on the policy.\n\nPolicy:\n\{input}\n\nQuestions:\n-",
+    "Criticize": "I am a highly intelligent bot for policy critique, specialized in climate change. Importantly, I also take into account the country that the policy is for. If you give me a country and a text that's a chunk of a policy related to climate change for that country, I'll generate critique for that text, trying to point out potential problems, risks, flaws and unintended consequences that such policy could cause. Then I'll propose changes to these issues, if I'll be sure of any.\nCountry: Great Britain.\nText:\n{input}\n\nMy critique:\n",
     "Question Answering": "I am a highly intelligent bot for policy critique, specialized in climate change. Based on the policy text below, answer the following question.\n\nPolicy Text:{input}\n\nQuestion:\n\n{question}Answer:",
     "Question Answering Ref": "I am a highly intelligent bot for policy critique, specialized in climate change. Based on the policy text below, reference what sentence of the policy text can be used to answer the following question.\n\nPolicy text:{input}\n\nQuestion:\n{question}\n\nReference text in policy to answer the question:",
     "FAQ Generation": "faq_generation",
@@ -39,6 +39,7 @@ country_list = [
     'TWN', 'TZA', 'UGA', 'UKR', 'URY', 'USA', 'UZB', 'VCT', 'VEN', 'VNM', 'VUT', 'WSM', 'XKX', 'YEM', 'ZAF', 'ZMB', 'ZWE',
 ]
 
+
 class ResponseOutput:
     def __init__(self):
         self.responses = []
@@ -55,18 +56,18 @@ class ResponseOutput:
             api_key=self.api_key,
             temperature=temperature,
             question=question,
-            )
+        )
 
     def get_response(self, input, task, temperature, question):
         response = self.process_prompt(
             task, input, temperature, question)
-        
+
         self.responses.append(response)
         self.tasks.append(task)
 
     def stream_responses(self):
 
-        for response, task in zip(self.responses, self.tasks):
+        for response, task in zip(self.responses[::-1], self.tasks[::-1]):
             st.markdown("***")
             st.subheader(get_key(task_list, task))
 
@@ -85,7 +86,9 @@ class ResponseOutput:
         self.responses = []
         self.tasks = []
 
+
 output = ResponseOutput()
+
 
 def app():
 
@@ -116,39 +119,41 @@ def app():
             value = st.selectbox(
                 "Task", options, format_func=lambda x: get_key(task_list, x))
 
-            if get_key(task_list,value)=='Similar Policies':
-                temperature = st.slider('Number of similar policies to show', 0, 5, 3)
+            if get_key(task_list, value) == 'Similar Policies':
+                temperature = st.slider(
+                    'Number of similar policies to show', 0, 5, 3)
             else:
                 # TODO: Experiment with default temperatures more
                 temperature = 0.45
-                if get_key(task_list,value) in ["Sentiment Analysis", "FAQ Generation", "Questions Generation"]:
+                if get_key(task_list, value) in ["Sentiment Analysis", "FAQ Generation", "Questions Generation"]:
                     temperature = 0.8
-                elif get_key(task_list,value) == "Criticize":
+                elif get_key(task_list, value) == "Criticize":
                     temperature = 0.9
-                elif get_key(task_list,value) in ["CO2 Reduction Commitments", "CO2 Reduction Commitment Ref", "Quote CO2 Reduction Commitments"]:
+                elif get_key(task_list, value) in ["CO2 Reduction Commitments", "CO2 Reduction Commitment Ref", "Quote CO2 Reduction Commitments"]:
                     temperature = 0.25
-                    
+
                 temperature = st.slider('Temperature', 0.0, 1.0, temperature)
 
-            if ((get_key(task_list,value)=='Question Answering')|(get_key(task_list,value)=='Question Answering Ref')):
+            if ((get_key(task_list, value) == 'Question Answering') | (get_key(task_list, value) == 'Question Answering Ref')):
                 question = st.text_input('Question:')
-            elif get_key(task_list,value)=='CO2 Reduction Commitment Ref':
+            elif get_key(task_list, value) == 'CO2 Reduction Commitment Ref':
                 question = st.text_input('Commitment:')
-            elif get_key(task_list,value)=='Similar Policies':
-                question = st.selectbox("Country of policy being written", country_list)
+            elif get_key(task_list, value) == 'Similar Policies':
+                question = st.selectbox(
+                    "Country of policy being written", country_list)
             else:
                 question = None
 
             if st.button("Run 🧠"):
                 with st.spinner(text="In progress"):
                     output.get_response(input, value, temperature, question)
-            
-            output.stream_responses()
 
             if st.button("Clear"):
                 output.clear_responses()
                 st.experimental_rerun()
                 st.empty()
+            output.stream_responses()
+
 
     else:
         st.error("🔑 Please enter API Key")
