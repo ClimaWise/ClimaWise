@@ -147,6 +147,7 @@ def app():
 
             if st.button("Clear"):
                 output.clear_responses()
+                st.experimental_rerun()
                 st.empty()
 
     else:
