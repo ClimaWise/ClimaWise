@@ -145,7 +145,6 @@ class GeneralModel:
         # Add the initial hyphen, if it was in the prompt
         if prompt[-1] == '-':
             r = '-' + r
-        print(r)
         return r.replace('-', '- ')
 
     def embedding_query(self, input, country, n_results):
@@ -178,6 +177,15 @@ class GeneralModel:
                 ordered_faq += question + '\n' + answer + '\n\n---\n'
         return ordered_faq
 
+    def quote_co2_commitments(self, input, temperature):
+        prompt = f"You're an expert policymaker that specializes in climate change. List up to 6 actions taken to reduce CO2 emission in the policy given below.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nActions taken:\n-"
+        commitments = '- ' + self.completion_query(prompt, myKwargs={"temperature": temperature}).replace('-', '- ')
+
+        prompt = f"You're an expert policymaker that specializes in climate change. List actions taken to reduce CO2 emission in the policy given below.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nActions taken:\n{commitments}\n\nFor each action taken, reference a single quote from the policy that confirms them:\n- \""
+        quotes = '- "' + self.completion_query(prompt, myKwargs={"temperature": temperature})
+
+        return quotes
+
     def model_prediction(self, task, input, api_key, temperature, question):
         """
         wrapper for the API to save the prompt and the result
@@ -194,5 +202,7 @@ class GeneralModel:
             return keyword_chunking_query(input, temperature)
         elif task == "faq_generation":
             return self.faq_generation(input, temperature)
+        elif task == "quote_co2_commitments":
+            return self.quote_co2_commitments(input, temperature)
         else:
             return self.completion_query(task.format(input=input, question=question), myKwargs={"temperature": temperature})
