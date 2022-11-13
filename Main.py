@@ -21,6 +21,7 @@ task_list = {
     "CO2 Reduction Commitments": "You're an expert policymaker that specializes in climate change. List up to 6 actions taken to reduce CO2 emission in the policy given below.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nActions taken:\n-",
     "CO2 Reduction Commitment Ref": "You're an expert policymaker that specializes in climate change. List actions taken to reduce CO2 emission in the policy given below.\n\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nActions taken:\n{question}\n\nFor each action taken, reference a single quote from the policy that confirms them:\n- \"",
     "Quote CO2 Reduction Commitments": "quote_co2_commitments",
+    "Sentiment Analysis": "I am a highly intelligent bot for policy critique, specialized in climate change. Importantly, I also take into account the associated tweet's sentiment.\n\nIf you give me the topic of the policy, I'll provide a sentiment analysis in the general public, deciding whether a the sentiment is positive, neutral, or negative.\n\nText:\n{input}\n\nSentiment:\n",
 }
 
 country_list = [

@@ -186,6 +186,12 @@ class GeneralModel:
 
         return quotes
 
+    def sentiment_analysis(self, input, temperature):
+        prompt = f"I am a highly intelligent bot for policy critique, specialized in climate change. Importantly, I also take into account the associated tweet's sentiment.\n\nIf you give me the topic of the policy, I'll provide a sentiment analysis in the general public, deciding whether a the sentiment is positive, neutral, or negative.\n\nText:\n{input}\n\nSentiment:\n"
+        sentiment = self.completion_query(prompt, myKwargs={"temperature": temperature})
+
+        return sentiment
+
     def model_prediction(self, task, input, api_key, temperature, question):
         """
         wrapper for the API to save the prompt and the result
@@ -204,5 +210,7 @@ class GeneralModel:
             return self.faq_generation(input, temperature)
         elif task == "quote_co2_commitments":
             return self.quote_co2_commitments(input, temperature)
+        elif task == "Sentiment Analysis":
+            return self.sentiment_analysis(input, temperature)
         else:
             return self.completion_query(task.format(input=input, question=question), myKwargs={"temperature": temperature})
