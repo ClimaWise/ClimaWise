@@ -9,3 +9,5 @@ share
 .vscode
 Pipfile
 Pipfile.lock
+notebooks/data
+climate-policy-radar-dataset
