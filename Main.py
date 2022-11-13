@@ -12,7 +12,8 @@ task_list = {
     "Bullet Points":"You're an expert policymaker specialized in climate change. Given the policy below, summarize its content in a bullet point list.\n\n{input}\n\n-",
     "Questions Generation":"You're an expert policymaker that specializes in climate change. Given the policy below, generate questions about it for a FAQ, but only if they're answerable based on the policy.\n\nPolicy:\n\{input}\n\nQuestions:\n\n- ",
     "Criticize":"I am a highly intelligent bot for policy critique, specialized in climate change. Importantly, I also take into account the country that the policy is for. If you give me a country and a text that's a chunk of a policy related to climate change for that country, I'll generate critique for that text, trying to point out potential problems, risks, flaws and unintended consequences that such policy could cause. Then I'll propose changes to these issues, if I'll be sure of any. Country: Great Britain.  Text:{input} \n\n\ My critique:\n-", 
-    "Question Answering": "I am a highly intelligent bot for policy critique, specialized in climate change. Based on the policy text below, answer the following question.\n\nPolicy Text:{input}\n\nQuestion:\n\n{question}Answer: "
+    "Question Answering": "I am a highly intelligent bot for policy critique, specialized in climate change. Based on the policy text below, answer the following question.\n\nPolicy Text:{input}\n\nQuestion:\n\n{question}Answer: ",
+    "Similar Policies": "Embedding task",
       }
 # You're an expert policymaker that specializes in climate change.Given the policy below and questions about it, answer them in order.If unsure about a question, reply with \'DONT KNOW\' instead.\nPolicy:\n\"\"\"\n{input}\n\"\"\"\nQuestion:\n{question}
 def app():
@@ -59,8 +60,11 @@ def app():
 
             if st.button("Run"):
                 with st.spinner(text="In progress"):
-                    response_text = process_prompt(value, input,temperature, question)
-                    st.markdown(response_text)
+                    response = process_prompt(value, input, temperature, question)
+                    if value == "Embedding task":
+                        st.dataframe(response)
+                    else:
+                        st.markdown(response)
     else:
         st.error("🔑 Please enter API Key")
 

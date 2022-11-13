@@ -10,3 +10,5 @@ include
 lib
 share
 .streamlit
+.vscode
+data
