@@ -5,7 +5,14 @@ from transformers import GPT2Tokenizer
 tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
 file_path = './Industrial_Decarbonisation_Strategy_10382.json'
 
+# function to return key for any value
+def get_key(my_dict, val):
+    for key, value in my_dict.items():
+        if val == value:
+            return key
+    return "key doesn't exist"
 
+    
 def policy_full_text(file_path:str):
 
     with open(file_path, encoding='utf-8') as f:
