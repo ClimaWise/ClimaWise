@@ -9,6 +9,7 @@ from tenacity import (
     wait_random_exponential,
 )
 from transformers import GPT2Tokenizer
+import pycountry
 
 
 def set_openai_key(key):
@@ -172,10 +173,20 @@ class GeneralModel:
             policy_names.extend(df['name'].tolist())
             countries.extend(df['country'].tolist())
 
+        # Swapping 3 letter country codes to full names
+        for idx, temp_country in enumerate(countries):
+            if temp_country == 'EUR':
+                countries[idx] = 'Europe'
+            elif temp_country == 'XKX':
+                countries[idx] = 'Kosovo'
+            else:
+                countries[idx] = pycountry.countries.get(alpha_3=temp_country).name
+        country = pycountry.countries.get(alpha_3=country).name
+
         verified_policy_names = []
         verified_countries = []
         for name, temp_country in zip(policy_names, countries):
-            prompt = f"You're an climate change policy expert. Given a policy name and 3 letter code of country of it's origin, answer what you know about that policy. If nothing, instead of guessing, write \"NOTHING\".\nWhat do you know about {name} by {temp_country}?\n"
+            prompt = f"You're an climate change policy expert. Given a policy name and the country of it's origin, answer what you know about that policy. If nothing, instead of guessing, write \"NOTHING\".\nWhat do you know about {name} by {temp_country}?\n"
             result = self.completion_query(prompt, myKwargs={"temperature": 0.25})
             print('Prompt:\n', prompt)
             print('\n\nResult:\n', result)
@@ -185,9 +196,8 @@ class GeneralModel:
         if len(verified_countries) == 0:
             return "Can't make a certain prediction, sorry!"
         
-        prompt = "You're an climate change policy expert. Your task is to predict whether a new policy will be successful, based on a list of policies (with their 3 letter code of country of origin), that the new policy is similar to. If you're unsure of the prediction, write \"DON'T KNOW\", otherwise predict whether it will be successful or not with a lengthy explanation to your answer, mention similar policies.\n\nThe new policy is most similar to:"
+        prompt = f"You're an climate change policy expert. Your task is to predict whether a new policy in {country} will be successful, based on a list of policies (with their country of origin), that the new policy is similar to - keep the difference between countries in mind. If you're unsure of the prediction, write \"DON'T KNOW\", otherwise predict whether it will be successful or not with a lengthy explanation to your answer, mention similar policies.\n\nThe new policy is most similar to:"
         for name, temp_country in zip(verified_policy_names, verified_countries):
-            # TODO: Swap country code to normal country name - don't forget to change that in the prompt !!!
             prompt += f'\n- {name} - {temp_country}'
         prompt += '\n\nPredictions:'
         return self.completion_query(prompt, myKwargs={"temperature": 0.9})
