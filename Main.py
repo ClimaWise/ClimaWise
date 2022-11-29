@@ -115,10 +115,10 @@ def app():
     # Creating an object of prediction service
     output.model = GeneralModel()
 
-    # with st.sidebar:
-    #     api_key = st.sidebar.text_input("APIkey", type="password")
+    with st.sidebar:
+        output.api_key = st.sidebar.text_input("APIkey", type="password")
 
-    output.api_key = st.secrets["OPENAI_KEY"]
+    # output.api_key = st.secrets["OPENAI_KEY"]
 
     if output.api_key:
         # MAIN
