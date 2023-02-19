@@ -81,11 +81,11 @@ def upsert_into_pinecone(country_code, date, name, url, text):
         if type(text) is list:
             for elem in text:
                 time.sleep(1)
-                embedding = get_embedding(elem, engine="text-similarity-babbage-001")
+                embedding = get_embedding(elem, engine="text-embedding-ada-002")
                 index.upsert([(name, embedding, {"name": name, "date": date, "country_code": country_code, "url": url})])
         else:
             time.sleep(1)
-            embedding = get_embedding(text, engine="text-similarity-babbage-001")
+            embedding = get_embedding(text, engine="text-embedding-ada-002")
             index.upsert([(name, embedding, {"name": name, "date": date, "country_code": country_code, "url": url})])
     except Exception as E:
         print(E)
@@ -93,11 +93,11 @@ def upsert_into_pinecone(country_code, date, name, url, text):
         if type(text) is list:
             for elem in text:
                 time.sleep(1)
-                embedding = get_embedding(elem, engine="text-similarity-babbage-001")
+                embedding = get_embedding(elem, engine="text-embedding-ada-002")
                 index.upsert([(name, embedding, {"name": name, "date": date, "country_code": country_code, "url": url})])
         else:
             time.sleep(1)
-            embedding = get_embedding(text, engine="text-similarity-babbage-001")
+            embedding = get_embedding(text, engine="text-embedding-ada-002")
             index.upsert([(name, embedding, {"name": name, "date": date, "country_code": country_code, "url": url})])
 
 
@@ -109,9 +109,9 @@ for dir_name in os.listdir('./data'):
                 filename_path = os.path.join(folder_path, file_name)
                 if is_fulltext(filename_path):
                     country_code, date, name, url, full_text = get_fulltext_data(filename_path)
-                    #upsert_into_pinecone(country_code, date, name, url, full_text)
+                    upsert_into_pinecone(country_code, date, name, url, full_text)
                     country_code, date, name, url, description = get_description(filename_path)
-                    #upsert_into_pinecone(country_code, date, name, url, description)
+                    upsert_into_pinecone(country_code, date, name, url, description)
                 else:
                     country_code, date, name, url, description = get_description(filename_path)
-                    #upsert_into_pinecone(country_code, date, name, url, description)
+                    upsert_into_pinecone(country_code, date, name, url, description)
