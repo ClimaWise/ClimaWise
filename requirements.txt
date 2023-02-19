@@ -5,3 +5,4 @@ nltk==3.7
 transformers==4.24.0
 pycountry==22.3.5
 pinecone-client
+matplotlib
