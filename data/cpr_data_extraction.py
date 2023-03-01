@@ -74,7 +74,9 @@ def get_description(filename: str) -> tuple:
 
     return country_code, date, "description"+name, url, description
 
-
+#TODO: Add source metadata
+#TODO: Change the name with the paragraph+name
+#TODO: Use different namespace for source
 def upsert_into_pinecone(country_code, date, name, url, text):
     index = pinecone.Index("climawise")
     try:
