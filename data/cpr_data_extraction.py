@@ -38,10 +38,7 @@ def get_fulltext_data(filename: str) -> tuple:
             text = item["text"]
             soup = BeautifulSoup(text, "html.parser")
             text_no_tags = soup.get_text()
-            # if p_value in paragraphs:
-            #     paragraphs[p_value].append(item["text"].strip().encode('ascii', 'ignore').decode())
-            # else:
-            #     paragraphs[p_value] = [item["text"].strip().encode('ascii', 'ignore').decode()]
+
             if p_value in paragraphs:
 
                 paragraphs[p_value] += " " + text_no_tags.strip().replace("\n", " ").encode('ascii', 'ignore').decode()
@@ -72,11 +69,10 @@ def get_description(filename: str) -> tuple:
         text_no_tags = soup.get_text()
         description = text_no_tags.strip().replace("\n", " ").encode('ascii', 'ignore').decode()
 
-    return country_code, date, "description"+name, url, description
+    return country_code, date, "description_"+name, url, description
 
-#TODO: Add source metadata
 #TODO: Change the name with the paragraph+name
-#TODO: Use different namespace for source = NAMESPACE: POLICIES
+
 def upsert_into_pinecone(country_code, date, name, url, text):
     index = pinecone.Index("climawise")
     try:
@@ -84,11 +80,11 @@ def upsert_into_pinecone(country_code, date, name, url, text):
             for elem in text:
                 time.sleep(1)
                 embedding = get_embedding(elem, engine="text-embedding-ada-002")
-                index.upsert([(name, embedding, {"name": name, "date": date, "country_code": country_code, "url": url})])
+                index.upsert([(name, embedding, {"name": name, "date": date, "country_code": country_code, "url": url, "source": "climate policy radar"})], namespace='policies')
         else:
             time.sleep(1)
             embedding = get_embedding(text, engine="text-embedding-ada-002")
-            index.upsert([(name, embedding, {"name": name, "date": date, "country_code": country_code, "url": url})])
+            index.upsert([(name, embedding, {"name": name, "date": date, "country_code": country_code, "url": url, "source": "climate policy radar"})], namespace='policies')
     except Exception as E:
         print(E)
         time.sleep(30)
@@ -96,11 +92,11 @@ def upsert_into_pinecone(country_code, date, name, url, text):
             for elem in text:
                 time.sleep(1)
                 embedding = get_embedding(elem, engine="text-embedding-ada-002")
-                index.upsert([(name, embedding, {"name": name, "date": date, "country_code": country_code, "url": url})])
+                index.upsert([(name, embedding, {"name": name, "date": date, "country_code": country_code, "url": url, "source": "climate policy radar"})], namespace='policies')
         else:
             time.sleep(1)
             embedding = get_embedding(text, engine="text-embedding-ada-002")
-            index.upsert([(name, embedding, {"name": name, "date": date, "country_code": country_code, "url": url})])
+            index.upsert([(name, embedding, {"name": name, "date": date, "country_code": country_code, "url": url, "source": "climate policy radar"})], namespace='policies')
 
 
 for dir_name in os.listdir('./data'):
