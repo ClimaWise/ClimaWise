@@ -23,7 +23,7 @@ def is_fulltext(filename: str) -> bool:
             return False
 
 
-# Chunking the text in p paragraphs. Do the histogram of paragraph dimensions
+# Chunking the text in p paragraphs.
 def get_fulltext_data(filename: str) -> tuple:
     with open(filename, "r", encoding='utf-8') as file:
         data = json.load(file)
@@ -40,19 +40,9 @@ def get_fulltext_data(filename: str) -> tuple:
             text_no_tags = soup.get_text()
 
             if p_value in paragraphs:
-
                 paragraphs[p_value] += " " + text_no_tags.strip().replace("\n", " ").encode('ascii', 'ignore').decode()
             else:
                 paragraphs[p_value] = text_no_tags.strip().replace("\n", " ").encode('ascii', 'ignore').decode()
-
-    # paragraph_lengths = [len(paragraph) for paragraph in paragraphs.values()]
-    #
-    # # Plot a histogram of the paragraph lengths
-    # plt.hist(paragraph_lengths, bins=range(0, 200, 10))
-    # plt.title("Histogram of Paragraph Lengths")
-    # plt.xlabel("Number of Characters")
-    # plt.ylabel("Number of Paragraphs")
-    # plt.show()
 
     return country_code, date, "fulltext_"+name, url, list(paragraphs.values())
 
@@ -70,7 +60,6 @@ def get_description(filename: str) -> tuple:
         description = text_no_tags.strip().replace("\n", " ").encode('ascii', 'ignore').decode()
 
     return country_code, date, "description_"+name, url, description
-
 #TODO: Change the name with the paragraph+name
 
 def upsert_into_pinecone(country_code, date, name, url, text):
@@ -80,7 +69,7 @@ def upsert_into_pinecone(country_code, date, name, url, text):
             for elem in text:
                 time.sleep(1)
                 embedding = get_embedding(elem, engine="text-embedding-ada-002")
-                index.upsert([(name, embedding, {"name": name, "date": date, "country_code": country_code, "url": url, "source": "climate policy radar"})], namespace='policies')
+                index.upsert([(name+"_"+str(text.index(elem)), embedding, {"name": name, "date": date, "country_code": country_code, "url": url, "source": "climate policy radar"})], namespace='policies')
         else:
             time.sleep(1)
             embedding = get_embedding(text, engine="text-embedding-ada-002")
@@ -92,7 +81,7 @@ def upsert_into_pinecone(country_code, date, name, url, text):
             for elem in text:
                 time.sleep(1)
                 embedding = get_embedding(elem, engine="text-embedding-ada-002")
-                index.upsert([(name, embedding, {"name": name, "date": date, "country_code": country_code, "url": url, "source": "climate policy radar"})], namespace='policies')
+                index.upsert([(name+"_"+str(text.index(elem)), embedding, {"name": name, "date": date, "country_code": country_code, "url": url, "source": "climate policy radar"})], namespace='policies')
         else:
             time.sleep(1)
             embedding = get_embedding(text, engine="text-embedding-ada-002")
