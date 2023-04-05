@@ -1,0 +1,249 @@
+{
+    "data": [
+        {
+            "text": [
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+                "Vivamus vitae neque blandit, faucibus arcu at, vestibulum odio",
+                "Ut fermentum auctor elit. Vivamus vitae neque blandit, faucibus arcu at, vestibulum odio",
+                "In porttitor enim a ex ultrices, id dictum eros consequat"
+            ],
+            "url": [
+                [
+                    "https://www.politico.com/news/2023/04/02/climate-politics-change-00088107",
+                    "https://www.google.com/s2/favicons?domain=politico.com"
+                ],
+                [
+                    "https://www.cnn.com/2023/04/01/europe/climate-activists-dye-spanish-steps-intl/index.html",
+                    "https://www.google.com/s2/favicons?domain=cnn.com"
+                ],
+                [
+                    "https://www.theguardian.com/us-news/2023/apr/01/harvard-professor-jody-freeman-conocophillips-fossil-fuels-climate",
+                    "https://www.google.com/s2/favicons?domain=theguardian.com"
+                ],
+                [
+                    "https://www.bbc.com/news/uk-england-suffolk-64978059",
+                    "https://www.google.com/s2/favicons?domain=bbc.com"
+                ],
+                [
+                    "https://www.nbcnews.com/science/environment/climate-conference-conservatives-rcna77158",
+                    "https://www.google.com/s2/favicons?domain=nbcnews.com"
+                ]
+            ],
+            "references": [
+                [
+                    0,
+                    1,
+                    2
+                ],
+                [
+                    0,
+                    3
+                ],
+                [
+                    3
+                ],
+                [
+                    4
+                ]
+            ]
+        },
+        {
+            "text": [
+                "Nullam bibendum velit id felis rhoncus, quis bibendum elit luctus",
+                "In malesuada sapien quis ligula egestas auctor",
+                "Curabitur vel nisl nec metus eleifend vehicula id eu magna",
+                "Phasellus condimentum neque a felis tristique, ac bibendum lectus rutrum"
+            ],
+            "url": [
+                [
+                    "https://www.nytimes.com/2023/04/03/climate/petrol-car-ban-europe.html",
+                    "https://www.google.com/s2/favicons?domain=nytimes.com"
+                ],
+                [
+                    "https://www.aljazeera.com/news/2023/4/1/iran-announces-plans-to-build-20-new-nuclear-reactors",
+                    "https://www.google.com/s2/favicons?domain=aljazeera.com"
+                ],
+                [
+                    "https://www.reuters.com/business/environment/eu-seeks-more-oversight-finance-fight-climate-change-2023-04-03/",
+                    "https://www.google.com/s2/favicons?domain=reuters.com"
+                ],
+                [
+                    "https://www.ft.com/content/90434e96-874f-41a9-9a2f-463c02f07cf6",
+                    "https://www.google.com/s2/favicons?domain=ft.com"
+                ],
+                [
+                    "https://apnews.com/article/russia-science-business-technology-872441f5d6ff5c6fb0cb4000312e1569",
+                    "https://www.google.com/s2/favicons?domain=apnews.com"
+                ]
+            ],
+            "references": [
+                [
+                    1,
+                    2
+                ],
+                [
+                    0,
+                    3
+                ],
+                [
+                    3
+                ],
+                [
+                    2,
+                    3
+                ]
+            ]
+        },
+        {
+            "text": [
+                "Pellentesque eget luctus diam. Morbi eu lorem quam",
+                "In fringilla eros vel purus vehicula vestibulum",
+                "Maecenas hendrerit risus a nisi commodo fermentum",
+                "Donec non commodo massa. Suspendisse vel enim ligula"
+            ],
+            "url": [
+                [
+                    "https://www.nytimes.com/2023/04/03/climate/greenhouse-gas-emissions.html",
+                    "https://www.google.com/s2/favicons?domain=nytimes.com"
+                ],
+                [
+                    "https://www.theguardian.com/environment/2023/apr/01/greenland-ice-sheet-melt-worst-case-sea-level-rise",
+                    "https://www.google.com/s2/favicons?domain=theguardian.com"
+                ],
+                [
+                    "https://www.bbc.com/news/science-environment-60993179",
+                    "https://www.google.com/s2/favicons?domain=bbc.com"
+                ],
+                [
+                    "https://www.aljazeera.com/news/2023/4/2/us-senate-votes-to-reverse-trumps-environmental-regulation-rollbacks",
+                    "https://www.google.com/s2/favicons?domain=aljazeera.com"
+                ],
+                [
+                    "https://www.washingtonpost.com/climate-environment/2023/04/03/nrdc-fossil-fuel-climate-change-lawsuit/",
+                    "https://www.google.com/s2/favicons?domain=washingtonpost.com"
+                ]
+            ],
+            "references": [
+                [
+                    0,
+                    1
+                ],
+                [
+                    0,
+                    2
+                ],
+                [
+                    1,
+                    3
+                ],
+                [
+                    2,
+                    4
+                ],
+                [
+                    3
+                ]
+            ]
+        },
+        {
+            "text": [
+                "Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae",
+                "Nam in nisi in lorem pharetra tempor in vel purus",
+                "Duis sollicitudin metus id libero congue, in sagittis enim eleifend",
+                "Sed bibendum tortor sit amet nulla interdum cursus",
+                "Cras eget velit sed justo vestibulum hendrerit in et mi"
+            ],
+            "url": [
+                [
+                    "https://www.nytimes.com/2023/04/04/world/asia/north-korea-missile-test-us-china.html",
+                    "https://www.google.com/s2/favicons?domain=nytimes.com"
+                ],
+                [
+                    "https://www.reuters.com/world/asia-pacific/north-korea-fires-multiple-unidentified-projectiles-south-korea-military-2023-04-04/",
+                    "https://www.google.com/s2/favicons?domain=reuters.com"
+                ],
+                [
+                    "https://www.aljazeera.com/news/2023/4/4/n-korea-fires-multiple-unidentified-projectiles-south-says",
+                    "https://www.google.com/s2/favicons?domain=aljazeera.com"
+                ],
+                [
+                    "https://www.bbc.com/news/world-asia-61066178",
+                    "https://www.google.com/s2/favicons?domain=bbc.com"
+                ],
+                [
+                    "https://www.dw.com/en/south-korea-reports-north-korea-fires-multiple-unidentified-projectiles/a-61262845",
+                    "https://www.google.com/s2/favicons?domain=dw.com"
+                ]
+            ],
+            "references": [
+                [
+                    0,
+                    1,
+                    2
+                ],
+                [
+                    0,
+                    3
+                ],
+                [
+                    0,
+                    4
+                ],
+                [
+                    1,
+                    3,
+                    4
+                ]
+            ]
+        },
+        {
+            "text": [
+                "Pellentesque vitae nibh nec ante pretium consectetur non non sapien",
+                "Duis nec ultricies enim. Nam sed tincidunt lacus",
+                "Suspendisse lacinia malesuada enim, ut dictum magna bibendum a",
+                "Vestibulum mollis orci id hendrerit finibus"
+            ],
+            "url": [
+                [
+                    "https://www.bbc.com/news/world-middle-east-65249212",
+                    "https://www.google.com/s2/favicons?domain=bbc.com"
+                ],
+                [
+                    "https://www.nytimes.com/2023/04/04/business/energy-environment/us-clean-energy-campaign.html",
+                    "https://www.google.com/s2/favicons?domain=nytimes.com"
+                ],
+                [
+                    "https://www.theguardian.com/world/2023/apr/04/one-in-three-european-fish-species-threatened-by-overfishing-report-finds",
+                    "https://www.google.com/s2/favicons?domain=theguardian.com"
+                ],
+                [
+                    "https://www.npr.org/2023/04/04/711035737/berkeley-lab-scientists-design-a-machine-to-reverse-climate-change",
+                    "https://www.google.com/s2/favicons?domain=npr.org"
+                ],
+                [
+                    "https://www.reuters.com/world/europe/germanys-greens-push-climate-policy-centre-election-campaign-2023-04-04/",
+                    "https://www.google.com/s2/favicons?domain=reuters.com"
+                ]
+            ],
+            "references": [
+                [
+                    0,
+                    4
+                ],
+                [
+                    1,
+                    2
+                ],
+                [
+                    2
+                ],
+                [
+                    3
+                ],
+                [
+                    4
+                ]
+            ]
+        }
+    ]
+}

@@ -1,0 +1,24 @@
+{
+    "data": [
+            {
+              "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam vitae ligula nec ante varius tincidunt. Ut fermentum auctor elit. Vivamus vitae neque blandit, faucibus arcu at, vestibulum odio. In porttitor enim a ex ultrices, id dictum eros consequat.",
+              "url": "https://www.bbc.com/news/world-us-canada-60832193",
+              "image_preview": "https://ichef.bbci.co.uk/news/976/cpsprodpb/137A5/production/_128222753_p09y2vl0.jpg"
+            },
+            {
+              "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec pharetra massa non arcu sagittis efficitur. Sed non quam diam. Aliquam nec orci ac eros fringilla dignissim. Nullam eget quam justo. Nulla facilisi. Fusce tincidunt nulla eget odio maximus, at dignissim mauris congue.",
+              "url": "https://www.nytimes.com/2022/03/21/world/europe/nord-stream-2-ukraine-germany.html",
+              "image_preview": "https://static01.nyt.com/images/2022/03/21/world/21germany-ns2/merlin_196463568_a4b4c17b-0c5f-4b20-9e1f-60f425a95a71-facebookJumbo.jpg"
+            },
+            {
+              "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis quis ligula vitae nulla varius venenatis. Integer luctus, nulla vitae elementum lobortis, odio mauris ultrices urna, vitae maximus mauris massa in ante.",
+              "url": "https://www.cnn.com/2022/03/21/europe/ukraine-russia-nord-stream-2-talks-intl-hnk/index.html",
+              "image_preview": "https://cdn.cnn.com/cnnnext/dam/assets/220319142129-nord-stream-2-ukraine-0320-super-tease.jpg"
+            },
+            {
+              "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse potenti. Sed varius dolor eu elit ultricies, ac facilisis odio varius. Sed in finibus ante, sit amet posuere urna. Integer faucibus semper purus, quis facilisis odio sodales in. Nunc in risus id felis commodo luctus. Fusce quis mauris justo. ",
+              "url": "https://www.bloomberg.com/news/articles/2022-03-22/oil-falls-to-one-week-low-as-virus-impact-on-demand-clouds-outlook",
+              "image_preview": "https://assets.bwbx.io/images/users/iqjWHBFdfxIU/iKAnXBUIE5lA/v0/1000x-1.jpg"
+            }
+    ]
+}

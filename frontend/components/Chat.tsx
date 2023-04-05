@@ -3,13 +3,17 @@ import { Button } from './Button'
 import { type Message, ChatLine, LoadingChatLine } from './ChatLine'
 import { useCookies } from 'react-cookie'
 
+/* NOTE FOR DEBUGGING: print statements in this file are typically best viewing the browser console.*/
+
 const COOKIE_NAME = 'nextjs-example-ai-chat-gpt3'
 
 // default first message to display in UI (not necessary to define the prompt)
 export const initialMessages: Message[] = [
   {
     who: 'bot',
-    message: 'This is ClimaWise. Ask me anything relating to Climate Policy.',
+    // message: 'This is ClimaWise. Ask me anything relating to Climate Policy.',
+    message: ['This is ClimaWise. Ask me anything relating to Climate Policy.'],
+
   },
 ]
 
@@ -24,7 +28,8 @@ const InputMessage = ({ input, setInput, sendMessage }: any) => (
         className="rounded-l-full h-full w-64 "
 
         onClick={() => {
-          sendMessage(input)
+          // User-defined messages.
+          sendMessage([input])
           setInput('')
         }}
       >
@@ -56,6 +61,8 @@ const InputMessage = ({ input, setInput, sendMessage }: any) => (
 )
 
 export function Chat() {
+
+
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -70,7 +77,7 @@ export function Chat() {
   }, [cookie, setCookie])
 
   // send message to API /api/chat endpoint
-  const sendMessage = async (message: string) => {
+  const sendMessage = async (message: [string]) => {
     setLoading(true)
     const newMessages = [
       ...messages,
@@ -91,20 +98,30 @@ export function Chat() {
     })
     const data = await response.json()
 
+
     // strip out white spaces from the bot message
-    const botNewMessage = data.text.trim()
+    // const botNewMessage = data.text.trim()
+    // const botNewUrl = data.url.trim()
+    // const botNewImage = data.image.trim()
+    // TODO: trim all the input data if necessary (see above, as was done before transfer to lists)
+    const botNewMessage = data.textList
+    const botNewUrl = data.urlList
+    const botNewReferences = data.referenceList
+
 
     setMessages([
       ...newMessages,
-      { message: botNewMessage, who: 'bot' } as Message,
+      { message: botNewMessage, url: botNewUrl, references: botNewReferences, who: 'bot' } as Message,
     ])
+
+
     setLoading(false)
   }
 
   return (
     <div className="rounded-2xl border-zinc-100  lg:border lg:p-6 h-full no-scrollbar overflow-y-scroll h-full" id="chatbox">
-      {messages.map(({ message, who }, index) => (
-        <ChatLine key={index} who={who} message={message} />
+      {messages.map(({ message, who, url, references }, index) => (
+        <ChatLine key={index} who={who} message={message} url={url} references={references} />
       ))}
 
       {loading && <LoadingChatLine />}

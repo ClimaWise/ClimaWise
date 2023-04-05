@@ -11,9 +11,10 @@ const botName = 'AI'
 const userName = 'News reporter' // TODO: move to ENV var
 const firstMessge = initialMessages[0].message
 
-// @TODO: unit test this. good case for unit testing
+// TODO: unit test this.
 const generatePromptFromMessages = (messages: Message[]) => {
   console.log('== INITIAL messages ==', messages)
+
 
   let prompt = ''
 
@@ -22,7 +23,6 @@ const generatePromptFromMessages = (messages: Message[]) => {
 
   // remove first conversaiton (first 2 messages)
   const messagesWithoutFirstConvo = messages.slice(2)
-  console.log(' == messagesWithoutFirstConvo', messagesWithoutFirstConvo)
 
   // early return if no messages
   if (messagesWithoutFirstConvo.length == 0) {
@@ -74,13 +74,30 @@ export default async function handler(req: NextRequest) {
     requestHeaders['OpenAI-Organization'] = process.env.OPENAI_API_ORG
   }
 
-  const response = await fetch('https://api.openai.com/v1/completions', {
-    headers: requestHeaders,
-    method: 'POST',
-    body: JSON.stringify(payload),
-  })
+  // TODO:
+  // 1) Create dummy data containing the response and references
+  // 2) create a function to mock fetching so we return this dummy data vs hitting openai api
 
-  const data = await response.json()
+  // const response = await fetch('https://api.openai.com/v1/completions', {
+  //   headers: requestHeaders,
+  //   method: 'POST',
+  //   body: JSON.stringify(payload),
+  // })
+
+  const fakeResponse = {
+    json: async () => {
+      const json = require('../../assets/data_with_references.json');
+      return json;
+    },
+  };
+
+
+  const data = await fakeResponse.json()
+  let dummyDataNum = Math.floor(Math.random() * data.data.length)
+ 
+  const textList = data.data[dummyDataNum].text
+  const urlList = data.data[dummyDataNum].url
+  const referenceList = data.data[dummyDataNum].references
 
   if (data.error) {
     console.error('OpenAI API error: ', data.error)
@@ -90,5 +107,7 @@ export default async function handler(req: NextRequest) {
   }
 
   // return response with 200 and stringify json text
-  return NextResponse.json({ text: data.choices[0].text })
+  // return NextResponse.json({ text: data.choices[0].text })
+
+  return NextResponse.json({ textList, urlList, referenceList })
 }
