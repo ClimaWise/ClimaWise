@@ -1,8 +1,10 @@
 import json
 import time
 import openai
+import dateutil.parser
+from tqdm import tqdm
 
-TWEETS_DUMP = "./output_kaggle.jsonl" # Too big to put on Git
+TWEETS_DUMP = "E:\\Python Projects\\ClimaWise\\output_kaggle.jsonl" # Too big to put on Git
 BATCH_SIZE = 100 # Recommended size for Pinecone
 
 openai.api_key = "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"
@@ -41,11 +43,24 @@ def process_batch(tweets):
         List of dicts with tweet informations, format straight from the twitter API.
     """
     texts = [tweet['text'] for tweet in tweets]
-    embeddings = get_embeddings(texts)
+    embeddings = get_embeddings(texts) # Get the embeddings
     for idx in range(len(tweets)):
+        # Add embeddings to the items
         tweets[idx]['embedding'] = embeddings[idx]
-    
-    items = [(tweet['id'], tweet['embedding'], {"id": tweet['id'], "date": tweet['created_at'], "lang":  tweet['lang'], "author_id": tweet['author_id'], "source": "twitter", "retweet_count": tweet['public_metrics']['retweet_count'], "reply_count": tweet['public_metrics']['reply_count'], "like_count": tweet['public_metrics']['like_count'], "quote_count": tweet['public_metrics']['quote_count'], "impression_count": tweet['public_metrics']['impression_count']}) for tweet in tweets]
+
+        # Extract year, month and day from the timestamp (ISO8601)
+        date = dateutil.parser.parse(tweets[idx]['created_at'])
+        tweets[idx]['year'], tweets[idx]['month'], tweets[idx]['day'] = date.year, date.month, date.day
+
+        # Construct the url
+        tweets[idx]['url'] = f"https://www.twitter.com/{tweets[idx]['author_id']}/status/{tweets[idx]['id']}"
+
+    items = [(tweet['id'], tweet['embedding'], \
+              {"text": tweet['text'], "lang": tweet['lang'], "author_id": tweet['author_id'], \
+                "url": tweet['url'], "year": tweet["year"], "month": tweet["month"], "day": tweet["day"], \
+                "source": "twitter", "retweet_count": tweet['public_metrics']['retweet_count'], \
+                "reply_count": tweet['public_metrics']['reply_count'], "like_count": tweet['public_metrics']['like_count'], \
+                "quote_count": tweet['public_metrics']['quote_count'], "impression_count": tweet['public_metrics']['impression_count']}) for tweet in tweets]
 
     upsert_into_pinecone(items, 'twitter')
 
@@ -54,7 +69,7 @@ count_target = 5000
 with open(TWEETS_DUMP) as f:
     count = 0
     tweets = []
-    for line in f.readlines():
+    for line in tqdm(f.readlines()):
         tweet = json.loads(line)
         tweets.append(tweet)
         if len(tweets) == BATCH_SIZE:
