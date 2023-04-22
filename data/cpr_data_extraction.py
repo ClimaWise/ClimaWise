@@ -1,6 +1,6 @@
 import os
 import json
-import re
+import shutil
 import time
 import zipfile
 import openai
@@ -8,6 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 from model import get_embedding
 import pinecone
+from langcodes import Language
 
 openai.api_key = "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"
 pinecone.init(api_key="16a7a0ba-c9d6-44ce-9dd8-9a88d8643660", environment="us-east1-gcp")
@@ -56,6 +57,13 @@ def download_and_extract_repo():
             zip_ref.extractall("repo")
 
         os.remove("repo.zip")
+        repo_folder = os.path.join("repo", os.listdir("repo")[0])
+        src_data_folder = os.path.join(repo_folder, "data")
+        dest_data_folder = "data"
+        if os.path.exists(dest_data_folder):
+            shutil.rmtree(dest_data_folder)
+        shutil.move(src_data_folder, dest_data_folder)
+        shutil.rmtree('repo')
     else:
         print(f"Error: Unable to download repo. Status code {response.status_code}")
 
@@ -77,6 +85,8 @@ def get_fulltext_data(filename: str) -> tuple:
         date = data["document_date"]
         name = data["document_name"]
         url = data["document_url"]
+        lang = Language.find(data["document_language"]).to_tag()
+        keywords = data["document_keyword"]
 
         paragraphs = {}
         for item in data["text_blocks"]:
@@ -90,7 +100,7 @@ def get_fulltext_data(filename: str) -> tuple:
             else:
                 paragraphs[p_value] = text_no_tags.strip().replace("\n", " ").encode('ascii', 'ignore').decode()
 
-    return country_code, date, "fulltext_" + name, url, list(paragraphs.values())
+    return country_code, date, "fulltext_" + name, url, list(paragraphs.values()), lang, keywords
 
 
 def get_description(filename: str) -> tuple:
@@ -104,25 +114,33 @@ def get_description(filename: str) -> tuple:
         soup = BeautifulSoup(text, "html.parser")
         text_no_tags = soup.get_text()
         description = text_no_tags.strip().replace("\n", " ").encode('ascii', 'ignore').decode()
+        lang = Language.find(data["document_language"]).to_tag()
+        keywords = data["document_keyword"]
 
-    return country_code, date, "description_" + name, url, description
+    return country_code, date, "description_" + name, url, description, lang, keywords
 
 
-def upsert_into_pinecone(country_code, date, name, url, text):
+def upsert_into_pinecone(country_code, date, name, url, text, lang, keywords):
     index = pinecone.Index("climawise")
+    year = date.split("/")[2]
+    month = date.split("/")[1]
+    day = date.split("/")[0]
+    words = name.split()
+    first_three_letters = words[0][0].lower() + words[1][0].lower() + words[2][0].lower()
+    id = "cpr_" + year + month + day + "_" + first_three_letters
+
     try:
         if type(text) is list:
             for elem in text:
                 time.sleep(1)
                 embedding = get_embedding(elem, engine="text-embedding-ada-002")
                 index.upsert([(name + "_" + str(text.index(elem)), embedding,
-                               {"name": name, "date": date, "country_code": country_code, "url": url,
-                                "source": "climate policy radar"})], namespace='policies')
+                               {"id": id + "_p" + str(text.index(elem)), "text": text, "year": year, "month": month, "day": day, "url": url, "title": name, "lang": lang, "keywords": keywords, "country code": country_code})],
+                             namespace='policies')
         else:
             time.sleep(1)
             embedding = get_embedding(text, engine="text-embedding-ada-002")
-            index.upsert([(name, embedding, {"name": name, "date": date, "country_code": country_code, "url": url,
-                                             "source": "climate policy radar"})], namespace='policies')
+            index.upsert([(name, embedding, {"id": id + "_dsc", "text": text, "year": year, "month": month, "day": day, "url": url, "title": name, "lang": lang, "keywords": keywords, "country code": country_code})], namespace='policies')
     except Exception as E:
         print(E)
         time.sleep(30)
@@ -131,13 +149,15 @@ def upsert_into_pinecone(country_code, date, name, url, text):
                 time.sleep(1)
                 embedding = get_embedding(elem, engine="text-embedding-ada-002")
                 index.upsert([(name + "_" + str(text.index(elem)), embedding,
-                               {"name": name, "date": date, "country_code": country_code, "url": url,
-                                "source": "climate policy radar"})], namespace='policies')
+                               {"id": id + "_p" + str(text.index(elem)), "text": text, "year": year, "month": month,
+                                "day": day, "url": url, "title": name, "lang": lang, "keywords": keywords,
+                                "country code": country_code})],
+                             namespace='policies')
         else:
             time.sleep(1)
             embedding = get_embedding(text, engine="text-embedding-ada-002")
-            index.upsert([(name, embedding, {"name": name, "date": date, "country_code": country_code, "url": url,
-                                             "source": "climate policy radar"})], namespace='policies')
+            index.upsert([(name, embedding, {"id": id + "_dsc", "text": text, "year": year, "month": month, "day": day, "url": url, "title": name, "lang": lang, "keywords": keywords, "country code": country_code})], namespace='policies')
+
 
 
 if __name__ == "__main__":
@@ -151,17 +171,18 @@ if __name__ == "__main__":
     else:
         print("Commit hash matches. No need to update the repo content.")
 
-    # for dir_name in os.listdir('./data'):
-    #     if dir_name == 'ALB':
-    #         folder_path = os.path.join('./data', dir_name)
-    #         for file_name in os.listdir(folder_path):
-    #             if file_name.endswith('.json'):
-    #                 filename_path = os.path.join(folder_path, file_name)
-    #                 if is_fulltext(filename_path):
-    #                     country_code, date, name, url, full_text = get_fulltext_data(filename_path)
-    #                     upsert_into_pinecone(country_code, date, name, url, full_text)
-    #                     country_code, date, name, url, description = get_description(filename_path)
-    #                     upsert_into_pinecone(country_code, date, name, url, description)
-    #                 else:
-    #                     country_code, date, name, url, description = get_description(filename_path)
-    #                     upsert_into_pinecone(country_code, date, name, url, description)
+    for dir_name in os.listdir('./data'):
+        if dir_name == 'AFG':
+            folder_path = os.path.join('./data', dir_name)
+            for file_name in os.listdir(folder_path):
+                if file_name.endswith('.json'):
+                    filename_path = os.path.join(folder_path, file_name)
+                    if is_fulltext(filename_path):
+                        country_code, date, name, url, full_text, lang, keywords = get_fulltext_data(filename_path)
+                        upsert_into_pinecone(country_code, date, name, url, full_text, lang, keywords)
+
+                        country_code, date, name, url, description, lang, keywords = get_description(filename_path)
+                        upsert_into_pinecone(country_code, date, name, url, description, lang, keywords)
+                    else:
+                        country_code, date, name, url, description, lang, keywords = get_description(filename_path)
+                        upsert_into_pinecone(country_code, date, name, url, description, lang, keywords)
