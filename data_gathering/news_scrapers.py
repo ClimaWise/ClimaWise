@@ -1,5 +1,6 @@
 import datetime
 import os.path
+import re
 import time
 
 import pandas as pd
@@ -23,7 +24,6 @@ class NewsScraper:
         self.set_archive()
         self.set_scraper()
         self.results = pd.DataFrame()
-        self.cache = None
 
     def set_archive(self):
         """Read and set articles archive"""
@@ -62,6 +62,50 @@ class NewsScraper:
             )
         )
 
+    def get_embeddings(self):
+        """Get embeddings of the scraped articles"""
+        print("Getting embeddings of scraped articles...")
+        self.results = self.results.assign(embedding=None, id=None).astype("object")
+
+        for count, (i, row) in enumerate(self.results.iterrows()):
+            print(f"Embedding article {count + 1} of {self.results.shape[0]}")
+
+            # get embedding
+            try:
+                try:
+                    time.sleep(1)  # to avoid hitting RateLimitError error of 60/min
+                    self.results.at[i, "embedding"] = get_embedding(
+                        row.title + "/n" + row.text, engine="text-embedding-ada-002"
+                    )
+                except:
+                    print("Embedding failed, waiting 60 seconds before retrying...")
+                    time.sleep(60)
+                    self.results.at[i, "embedding"] = get_embedding(
+                        row.title + "/n" + row.text, engine="text-embedding-ada-002"
+                    )
+
+            except Exception as e:
+                raise Exception(
+                    f"Upsertion stopped at results index {i} because of failed embedding",
+                    e,
+                )
+
+            # create a unique id
+            self.results.at[i, "id"] = "_".join(
+                [
+                    self.identifier,
+                    row.date.strftime("%Y%m%d"),
+                    "".join(
+                        [
+                            w[0]
+                            for w in re.sub(
+                                r"[^a-z0-9 ]", "", row.title.lower()
+                            ).split()
+                        ]
+                    ),
+                ]
+            )
+
     def update_archive(self):
         """Update archive with newly scraped articles"""
         if self.results.empty:
@@ -71,45 +115,21 @@ class NewsScraper:
             print(f"Updated archive of {self.identifier} saved to pickle")
 
     def upsert_to_pinecone(self):
-        """Embed scraped results and upsert the vectors into Pinecone"""
+        """Upsert the embedding vectors into Pinecone"""
         vectors_to_upsert = []
-        for count, row in enumerate(self.results.itertuples()):
-            print(f"Embedding article {count + 1} of {self.results.shape[0]}")
-
-            idx, date, title, url, text = row
-
-            # get embedding
-            try:
-                try:
-                    # this one is to avoid hitting RateLimitError error of 60/min
-                    time.sleep(1)
-                    embedding = get_embedding(text, engine="text-embedding-ada-002")
-                except:
-                    print("Embedding failed, waiting 60 seconds before retrying...")
-                    time.sleep(60)
-                    embedding = get_embedding(text, engine="text-embedding-ada-002")
-
-            except Exception as e:
-                self.cache = vectors_to_upsert
-                raise Exception(
-                    f"Upsertion stopped at results index {idx} because of failed embedding. Embeddings saved to cache.",
-                    e,
-                )
-
+        for _, row in self.results.iterrows():
             vectors_to_upsert.append(
                 {
-                    "id": "_".join(
-                        [
-                            self.identifier,
-                            date.strftime("%Y%m%d"),
-                            "".join([w[0] for w in title.lower().split()]),
-                        ]
-                    ),
-                    "values": embedding,
+                    "id": row.id,
+                    "values": row.embedding,
                     "metadata": {
-                        "title": title,
-                        "date": date,
-                        "url": url,
+                        "text": row.text,
+                        "title": row.title,
+                        "year": row.date.year,
+                        "month": row.date.month,
+                        "day": row.date.day,
+                        "url": row.url,
+                        "source": self.identifier,
                     },
                 }
             )
@@ -121,11 +141,12 @@ class NewsScraper:
             print("Nothing to upsert to Pinecone")
 
     def run(self):
-        """Run scraping, update local archive, get embeddings and upsert them into Pinecone"""
+        """Run scraping, get embeddings, update local archive, and upsert them into Pinecone"""
         self.start_scraper()
         if self.results.empty:
             print(f"No results from scraping - ending run of {self.identifier}")
         else:
+            self.get_embeddings()
             self.update_archive()
             self.upsert_to_pinecone()
             print(f"Run completed of {self.identifier}")
@@ -235,14 +256,12 @@ class NasaScraper:
         page = 0
         articles_list = []
         while not self.scraping_done and page <= 100:
-
             print(f"Scraping page {page}")
             try:
                 response = requests.get(self.search_url.format(page=page))
 
                 # get articles from response json
                 for article in response.json()["items"]:
-
                     article_out = self.get_article(article)
                     if self.scraping_done:
                         break
