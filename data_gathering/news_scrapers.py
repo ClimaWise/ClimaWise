@@ -1,155 +1,10 @@
 import datetime
-import os.path
-import re
-import time
 
 import pandas as pd
-import pinecone
 import requests
 from bs4 import BeautifulSoup
 
-from data_gathering.utils import get_body_text, get_url_soup
-from model import get_embedding
-
-
-class NewsScraper:
-    def __init__(
-        self, identifier: str, archive_folder: os.path, pinecone_index: pinecone.Index
-    ):
-        self.identifier = identifier
-        self.archive_path = os.path.join(
-            archive_folder, self.identifier + "_archive.pkl"
-        )
-        self.pinecone_index = pinecone_index
-        self.set_archive()
-        self.set_scraper()
-        self.results = pd.DataFrame()
-
-    def set_archive(self):
-        """Read and set articles archive"""
-        if os.path.isfile(self.archive_path):
-            self.archive = pd.read_pickle(self.archive_path)
-        else:
-            self.archive = pd.DataFrame()
-
-    def set_scraper(self):
-        """Set appropriate scraper class"""
-        if self.archive.empty:
-            date, title = datetime.datetime(2015, 1, 1).date(), ""
-        else:
-            date, title = self.archive.iloc[0]["date"], self.archive.iloc[0]["title"]
-
-        if self.identifier == "lifegate":
-            self.scraper = LifegateScraper(date, title)
-        elif self.identifier == "nasa":
-            self.scraper = NasaScraper(date, title)
-        elif self.identifier == "bbc":
-            self.scraper = BbcScraper(date, title)
-        else:
-            raise Exception(f"Identifier {self.identifier} is not recognized")
-
-    def start_scraper(self):
-        """Start scraping"""
-        print(f"Starting scraper of {self.identifier}...")
-        self.results = self.scraper.scrape_all()
-        print(f"Scraped {self.results.shape[0]} articles")
-
-        # reset index to match with archive's
-        archive_last_idx = self.archive.index.max()
-        self.results = self.results.set_index(
-            pd.RangeIndex(
-                archive_last_idx + self.results.shape[0], archive_last_idx, -1
-            )
-        )
-
-    def get_embeddings(self):
-        """Get embeddings of the scraped articles"""
-        print("Getting embeddings of scraped articles...")
-        self.results = self.results.assign(embedding=None, id=None).astype("object")
-
-        for count, (i, row) in enumerate(self.results.iterrows()):
-            print(f"Embedding article {count + 1} of {self.results.shape[0]}")
-
-            # get embedding
-            try:
-                try:
-                    time.sleep(1)  # to avoid hitting RateLimitError error of 60/min
-                    self.results.at[i, "embedding"] = get_embedding(
-                        row.title + "/n" + row.text, engine="text-embedding-ada-002"
-                    )
-                except:
-                    print("Embedding failed, waiting 60 seconds before retrying...")
-                    time.sleep(60)
-                    self.results.at[i, "embedding"] = get_embedding(
-                        row.title + "/n" + row.text, engine="text-embedding-ada-002"
-                    )
-
-            except Exception as e:
-                raise Exception(
-                    f"Upsertion stopped at results index {i} because of failed embedding",
-                    e,
-                )
-
-            # create a unique id
-            self.results.at[i, "id"] = "_".join(
-                [
-                    self.identifier,
-                    row.date.strftime("%Y%m%d"),
-                    "".join(
-                        [
-                            w[0]
-                            for w in re.sub(
-                                r"[^a-z0-9 ]", "", row.title.lower()
-                            ).split()
-                        ]
-                    ),
-                ]
-            )
-
-    def update_archive(self):
-        """Update archive with newly scraped articles"""
-        if self.results.empty:
-            print("Nothing to add to the archive")
-        else:
-            pd.concat([self.results, self.archive]).to_pickle(self.archive_path)
-            print(f"Updated archive of {self.identifier} saved to pickle")
-
-    def upsert_to_pinecone(self):
-        """Upsert the embedding vectors into Pinecone"""
-        vectors_to_upsert = []
-        for _, row in self.results.iterrows():
-            vectors_to_upsert.append(
-                {
-                    "id": row.id,
-                    "values": row.embedding,
-                    "metadata": {
-                        "text": row.text,
-                        "title": row.title,
-                        "year": row.date.year,
-                        "month": row.date.month,
-                        "day": row.date.day,
-                        "url": row.url,
-                        "source": self.identifier,
-                    },
-                }
-            )
-
-        if len(vectors_to_upsert):
-            self.pinecone_index.upsert(vectors=vectors_to_upsert, namespace="news")
-            print(f"Upserted {len(vectors_to_upsert)} articles into Pinecone")
-        else:
-            print("Nothing to upsert to Pinecone")
-
-    def run(self):
-        """Run scraping, get embeddings, update local archive, and upsert them into Pinecone"""
-        self.start_scraper()
-        if self.results.empty:
-            print(f"No results from scraping - ending run of {self.identifier}")
-        else:
-            self.get_embeddings()
-            self.update_archive()
-            self.upsert_to_pinecone()
-            print(f"Run completed of {self.identifier}")
+from utils import get_body_text, get_url_soup
 
 
 class LifegateScraper:
@@ -180,6 +35,7 @@ class LifegateScraper:
         # get article full text
         soup = get_url_soup(url)
         text = get_body_text(soup.find(True, {"class": "post__content editorial"}))
+        # TODO: remove <p class="licence">
 
         return [date, title, url, text]
 
