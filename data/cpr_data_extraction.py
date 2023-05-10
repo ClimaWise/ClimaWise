@@ -135,12 +135,17 @@ def upsert_into_pinecone(country_code, date, name, url, text, lang, keywords):
                 time.sleep(1)
                 embedding = get_embedding(elem, engine="text-embedding-ada-002")
                 index.upsert([(name + "_" + str(text.index(elem)), embedding,
-                               {"id": id + "_p" + str(text.index(elem)), "text": text, "year": year, "month": month, "day": day, "url": url, "title": name, "lang": lang, "keywords": keywords, "country code": country_code})],
+                               {"id": id + "_p" + str(text.index(elem)), "text": text, "year": year, "month": month,
+                                "day": day, "url": url, "title": name, "lang": lang, "keywords": keywords,
+                                "country code": country_code})],
                              namespace='policies')
         else:
             time.sleep(1)
             embedding = get_embedding(text, engine="text-embedding-ada-002")
-            index.upsert([(name, embedding, {"id": id + "_dsc", "text": text, "year": year, "month": month, "day": day, "url": url, "title": name, "lang": lang, "keywords": keywords, "country code": country_code})], namespace='policies')
+            index.upsert([(name, embedding,
+                           {"id": id + "_dsc", "text": text, "year": year, "month": month, "day": day, "url": url,
+                            "title": name, "lang": lang, "keywords": keywords, "country code": country_code})],
+                         namespace='policies')
     except Exception as E:
         print(E)
         time.sleep(30)
@@ -156,8 +161,10 @@ def upsert_into_pinecone(country_code, date, name, url, text, lang, keywords):
         else:
             time.sleep(1)
             embedding = get_embedding(text, engine="text-embedding-ada-002")
-            index.upsert([(name, embedding, {"id": id + "_dsc", "text": text, "year": year, "month": month, "day": day, "url": url, "title": name, "lang": lang, "keywords": keywords, "country code": country_code})], namespace='policies')
-
+            index.upsert([(name, embedding,
+                           {"id": id + "_dsc", "text": text, "year": year, "month": month, "day": day, "url": url,
+                            "title": name, "lang": lang, "keywords": keywords, "country code": country_code})],
+                         namespace='policies')
 
 
 if __name__ == "__main__":
