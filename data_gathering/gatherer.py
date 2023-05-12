@@ -29,6 +29,11 @@ class NewsGatherer:
         "bbc": BbcScraper,
     }
 
+    # Common metadata fields
+    _supported_metadata_fields = [
+        "text", "year", "month", "day", "url", "title", "lang", "keywords"
+    ]
+
     def __init__(self, archive_folder: os.path):
         self._identifier = None
         self._scraper = None
@@ -50,6 +55,9 @@ class NewsGatherer:
                 "OpenAI API key must be set as an environment variable"
             )
         openai.api_key = OPENAI_API_KEY
+
+        # Adding source specific metadata fields
+        self._supported_metadata_fields.extend(["source"])
 
     def set_source(self, identifier: str):
         """Set source by setting the relative articles archive and scraper class"""
@@ -101,6 +109,17 @@ class NewsGatherer:
         )
         if any(mask_chunking_needed):
             self.chunk_text(mask_chunking_needed)
+
+        # Preprocessing of date and source, TODO: Move it elsewhere?
+        # Extract year, month, day out of date field
+        if 'date' in self.results:
+            # Assuming the date is dateutils.date type
+            self.results['year'] = self.results['date'].apply(lambda x: x.year)
+            self.results['month'] = self.results['date'].apply(lambda x: x.month)
+            self.results['day'] = self.results['date'].apply(lambda x: x.day)
+        
+        # Add source column
+        self.results['source'] = self._identifier
 
     def start_scraper(self):
         """Run scraping from the current source and uniform the output"""
@@ -173,20 +192,16 @@ class NewsGatherer:
     def upsert_to_pinecone(self):
         """Upsert the embedding vectors into Pinecone"""
         vectors_to_upsert = []
+
+        columns_to_upsert = [col for col in self.results.columns.values \
+                             if col in self._supported_metadata_fields]
+
         for _, row in self.results.iterrows():
             vectors_to_upsert.append(
                 {
-                    "id": row.id,
-                    "values": row.embedding,
-                    "metadata": {
-                        "text": row.text,
-                        "title": row.title,
-                        "year": row.date.year,
-                        "month": row.date.month,
-                        "day": row.date.day,
-                        "url": row.url,
-                        "source": self._identifier,
-                    },
+                    "id": row['id'],
+                    "values": row["embedding"],
+                    "metadata": {col: row[col] for col in columns_to_upsert}
                 }
             )
 
