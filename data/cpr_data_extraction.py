@@ -10,12 +10,13 @@ from model import get_embedding
 import pinecone
 from langcodes import Language
 
-openai.api_key = "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"
+openai.api_key = "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"
+openai.organization = "org-hJNG70xB6BJoJxChW781MvrI"
 pinecone.init(api_key="16a7a0ba-c9d6-44ce-9dd8-9a88d8643660", environment="us-east1-gcp")
 GITHUB_API = "https://api.github.com"
 REPO_OWNER = "climatepolicyradar"
 REPO_NAME = "open-data"
-TOKEN = "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"
+TOKEN = "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"
 FILE_NAME = "commit_hash.txt"
 
 
