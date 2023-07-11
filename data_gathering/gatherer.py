@@ -31,7 +31,14 @@ class NewsGatherer:
 
     # Common metadata fields
     _supported_metadata_fields = [
-        "text", "year", "month", "day", "url", "title", "lang", "keywords"
+        "text",
+        "year",
+        "month",
+        "day",
+        "url",
+        "title",
+        "lang",
+        "keywords",
     ]
 
     def __init__(self, archive_folder: os.path):
@@ -86,7 +93,9 @@ class NewsGatherer:
     def chunk_text(self, mask):
         """Chunk text in smaller parts"""
         # TODO: apply the actual chunking - for now too long articles are skipped
+        print(f"Removing {self.results[mask].shape[0]} too long articles")
         self.results = self.results[~mask]
+        self.reset_results_index()
 
     def parse_data(self):
         """Cleaning of texts and chunking if needed"""
@@ -112,14 +121,23 @@ class NewsGatherer:
 
         # Preprocessing of date and source, TODO: Move it elsewhere?
         # Extract year, month, day out of date field
-        if 'date' in self.results:
+        if "date" in self.results:
             # Assuming the date is dateutils.date type
-            self.results['year'] = self.results['date'].apply(lambda x: x.year)
-            self.results['month'] = self.results['date'].apply(lambda x: x.month)
-            self.results['day'] = self.results['date'].apply(lambda x: x.day)
-        
+            self.results["year"] = self.results["date"].apply(lambda x: x.year)
+            self.results["month"] = self.results["date"].apply(lambda x: x.month)
+            self.results["day"] = self.results["date"].apply(lambda x: x.day)
+
         # Add source column
-        self.results['source'] = self._identifier
+        self.results["source"] = self._identifier
+
+    def reset_results_index(self):
+        """Reset results index to match with archive's"""
+        archive_last_idx = -1 if self.archive.empty else self.archive.index.max()
+        self.results = self.results.set_index(
+            pd.RangeIndex(
+                archive_last_idx + self.results.shape[0], archive_last_idx, -1
+            )
+        )
 
     def start_scraper(self):
         """Run scraping from the current source and uniform the output"""
@@ -128,14 +146,7 @@ class NewsGatherer:
         print(f"Scraped {self.results.shape[0]} articles")
 
         self.parse_data()
-
-        # reset index to match with archive's
-        archive_last_idx = self.archive.index.max()
-        self.results = self.results.set_index(
-            pd.RangeIndex(
-                archive_last_idx + self.results.shape[0], archive_last_idx, -1
-            )
-        )
+        self.reset_results_index()
 
     def get_embeddings(self):
         """Get embeddings of the scraped articles"""
@@ -193,15 +204,18 @@ class NewsGatherer:
         """Upsert the embedding vectors into Pinecone"""
         vectors_to_upsert = []
 
-        columns_to_upsert = [col for col in self.results.columns.values \
-                             if col in self._supported_metadata_fields]
+        columns_to_upsert = [
+            col
+            for col in self.results.columns.values
+            if col in self._supported_metadata_fields
+        ]
 
         for _, row in self.results.iterrows():
             vectors_to_upsert.append(
                 {
-                    "id": row['id'],
+                    "id": row["id"],
                     "values": row["embedding"],
-                    "metadata": {col: row[col] for col in columns_to_upsert}
+                    "metadata": {col: row[col] for col in columns_to_upsert},
                 }
             )
 
