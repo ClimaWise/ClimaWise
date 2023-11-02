@@ -136,7 +136,7 @@ def upsert_into_pinecone(country_code, date, name, url, text, lang, keywords):
                 time.sleep(1)
                 embedding = get_embedding(elem, engine="text-embedding-ada-002")
                 index.upsert([(name + "_" + str(text.index(elem)), embedding,
-                               {"id": id + "_p" + str(text.index(elem)), "text": text, "year": year, "month": month,
+                               {"id": id + "_p" + str(text.index(elem)), "text": elem, "year": year, "month": month,
                                 "day": day, "url": url, "title": name, "lang": lang, "keywords": keywords,
                                 "country code": country_code})],
                              namespace='policies')
@@ -155,7 +155,7 @@ def upsert_into_pinecone(country_code, date, name, url, text, lang, keywords):
                 time.sleep(1)
                 embedding = get_embedding(elem, engine="text-embedding-ada-002")
                 index.upsert([(name + "_" + str(text.index(elem)), embedding,
-                               {"id": id + "_p" + str(text.index(elem)), "text": text, "year": year, "month": month,
+                               {"id": id + "_p" + str(text.index(elem)), "text": elem, "year": year, "month": month,
                                 "day": day, "url": url, "title": name, "lang": lang, "keywords": keywords,
                                 "country code": country_code})],
                              namespace='policies')
@@ -180,17 +180,16 @@ if __name__ == "__main__":
         print("Commit hash matches. No need to update the repo content.")
 
     for dir_name in os.listdir('./data'):
-        if dir_name == 'AFG':
-            folder_path = os.path.join('./data', dir_name)
-            for file_name in os.listdir(folder_path):
-                if file_name.endswith('.json'):
-                    filename_path = os.path.join(folder_path, file_name)
-                    if is_fulltext(filename_path):
-                        country_code, date, name, url, full_text, lang, keywords = get_fulltext_data(filename_path)
-                        upsert_into_pinecone(country_code, date, name, url, full_text, lang, keywords)
+        folder_path = os.path.join('./data', dir_name)
+        for file_name in os.listdir(folder_path):
+            if file_name.endswith('.json'):
+                filename_path = os.path.join(folder_path, file_name)
+                if is_fulltext(filename_path):
+                    country_code, date, name, url, full_text, lang, keywords = get_fulltext_data(filename_path)
+                    upsert_into_pinecone(country_code, date, name, url, full_text, lang, keywords)
 
-                        country_code, date, name, url, description, lang, keywords = get_description(filename_path)
-                        upsert_into_pinecone(country_code, date, name, url, description, lang, keywords)
-                    else:
-                        country_code, date, name, url, description, lang, keywords = get_description(filename_path)
-                        upsert_into_pinecone(country_code, date, name, url, description, lang, keywords)
+                    country_code, date, name, url, description, lang, keywords = get_description(filename_path)
+                    upsert_into_pinecone(country_code, date, name, url, description, lang, keywords)
+                else:
+                    country_code, date, name, url, description, lang, keywords = get_description(filename_path)
+                    upsert_into_pinecone(country_code, date, name, url, description, lang, keywords)
